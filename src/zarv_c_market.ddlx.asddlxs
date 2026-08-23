@@ -1,0 +1,32 @@
+@Metadata.layer: #CUSTOMER
+@UI: {
+  headerInfo: {
+    typeName: 'Market',
+    typeNamePlural: 'Markets',
+    title: { type: #STANDARD, value: 'Mrktid' }
+  }
+}
+annotate view ZARV_C_MARKET with
+{
+  @UI.facet: [
+    { id: 'MarketDetails', purpose: #STANDARD, type: #COLLECTION, label: 'Market Details', position: 10 },
+    { id: 'MarketInfo', parentId: 'MarketDetails', type: #FIELDGROUP_REFERENCE, label: 'Market Info', position: 10, targetQualifier: 'MarketGroup' },
+    { id: 'Orders', purpose: #STANDARD, type: #LINEITEM_REFERENCE, label: 'Market Orders', position: 20, targetElement: '_Order' }
+  ]
+
+  @UI: { lineItem: [{ position: 10, label: 'Market ID' }],
+         fieldGroup: [{ qualifier: 'MarketGroup', position: 10, label: 'Market ID' }] }
+  Mrktid;
+
+  @UI: { lineItem: [{ position: 20, label: 'Status' }],
+         fieldGroup: [{ qualifier: 'MarketGroup', position: 20, label: 'Confirmation Status' }] }
+  Status;
+
+  @UI: { lineItem: [{ position: 30, label: 'Start Date' }],
+         fieldGroup: [{ qualifier: 'MarketGroup', position: 30, label: 'Start Date' }] }
+  Startdate;
+
+  @UI: { lineItem: [{ position: 40, label: 'End Date' }],
+         fieldGroup: [{ qualifier: 'MarketGroup', position: 40, label: 'End Date' }] }
+  Enddate;
+}

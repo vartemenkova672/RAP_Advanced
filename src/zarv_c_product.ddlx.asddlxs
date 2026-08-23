@@ -1,0 +1,98 @@
+@Metadata.layer: #CORE
+@Search.searchable: true
+
+@UI.headerInfo: { 
+  typeName: 'Kitchen Appliance', 
+  typeNamePlural: 'Kitchen Appliances', 
+  imageUrl: 'ProductGroupImage', 
+  title: { type: #STANDARD, label: 'Product', value: 'Prodid' }, 
+  description: { value: 'ProductGroupName', type: #STANDARD } 
+}
+
+@UI.presentationVariant: [{ 
+  sortOrder: [ 
+    { by: 'Prodid', direction: #ASC }, 
+    { by: 'ProductGroupName', direction: #ASC } 
+  ] 
+}]
+
+annotate entity ZARV_C_PRODUCT with {
+  
+  /* =========================================================================
+     FACETS (STRUCTURE OF THE OBJECT PAGE)
+     ========================================================================= */
+  @UI.facet: [
+    { id: 'HeaderPrice',       purpose: #HEADER, type: #DATAPOINT_REFERENCE,   targetQualifier: 'dpHeaderPrice',  position: 10 },
+    { id: 'HeaderProdId',      purpose: #HEADER, type: #DATAPOINT_REFERENCE,   targetQualifier: 'dpHeaderProdId', position: 20 },
+    { id: 'HeaderTax',         purpose: #HEADER, type: #DATAPOINT_REFERENCE,   targetQualifier: 'dpHeaderTax',    position: 30 },
+
+    { id: 'idGeneral',         type: #COLLECTION,           label: 'General Information', position: 10 },
+    { id: 'idBasic',           type: #FIELDGROUP_REFERENCE, label: 'Basic Data',          position: 10, parentId: 'idGeneral', targetQualifier: 'Basic' },
+    { id: 'idSizeDim',         type: #FIELDGROUP_REFERENCE, label: 'Size Dimensions',     position: 20, parentId: 'idGeneral', targetQualifier: 'Size' },
+    { id: 'idPrice',           type: #FIELDGROUP_REFERENCE, label: 'Price Details',       position: 30, parentId: 'idGeneral', targetQualifier: 'Price' },
+
+    { id: 'idAdmGrp',          type: #COLLECTION,           label: 'Admin Information',   position: 20 },
+    { id: 'idCreate',          type: #FIELDGROUP_REFERENCE, label: 'Create Info',         position: 10, parentId: 'idAdmGrp',  targetQualifier: 'Create' },
+    { id: 'idChange',          type: #FIELDGROUP_REFERENCE, label: 'Change Info',         position: 20, parentId: 'idAdmGrp',  targetQualifier: 'Change' }
+  ]
+
+  /* =========================================================================
+     ELEMENTS DECLARATION & UI PLACEMENT
+     ========================================================================= */
+
+  @UI.lineItem: [{ position: 10 }]
+  @UI.selectionField: [ { position: 10 } ]
+  @UI.fieldGroup: [{ qualifier: 'Basic', position: 10 }]
+  @UI.dataPoint: { qualifier: 'dpHeaderProdId', title: 'Product ID' } 
+  @Search.defaultSearchElement: true
+  Prodid;
+
+  @UI.lineItem: [{ position: 30, criticality: 'PhaseCriticality', criticalityRepresentation: #WITH_ICON }]
+  @UI.selectionField: [ { position: 20 } ]
+  @UI.fieldGroup: [{ qualifier: 'Basic', position: 30, criticality: 'PhaseCriticality' }] 
+  PhaseName;
+
+  @UI.lineItem: [{ position: 20 }]
+  @UI.selectionField: [ { position: 30 }]
+  @EndUserText.label: 'Product Group'
+  @UI.fieldGroup: [{ qualifier: 'Basic', position: 20 }]
+  Pgid;
+  
+  // --- Size Dimensions ---
+  @UI.lineItem: [{ position: 60 }]
+  @UI.fieldGroup: [{ qualifier: 'Size', position: 10 }]
+  Height;
+
+  @UI.lineItem: [{ position: 70 }]
+  @UI.fieldGroup: [{ qualifier: 'Size', position: 20 }]
+  Depth;
+
+  @UI.lineItem: [{ position: 80 }]
+  @UI.fieldGroup: [{ qualifier: 'Size', position: 30 }]
+  Width;
+
+  // --- Price Details ---
+  @UI.lineItem: [{ position: 40 }, {label: 'Net Price'}]
+  @UI.selectionField: [ { position: 40 } ]
+  @UI.fieldGroup: [{ qualifier: 'Price', position: 10 }]
+  @UI.dataPoint: { qualifier: 'dpHeaderPrice', title: 'Net Price' } 
+  Price;
+
+  @UI.lineItem: [{ position: 50 }, {label: 'Tax Rate'}]
+  @UI.fieldGroup: [{ qualifier: 'Price', position: 20 }]
+  @UI.dataPoint: { qualifier: 'dpHeaderTax', title: 'Tax Rate' } 
+  Taxrate;
+
+  // --- Admin Information Group ---
+  @UI.fieldGroup: [{ qualifier: 'Create', position: 10, label: 'Created By' }]
+  Createdby;
+
+  @UI.fieldGroup: [{ qualifier: 'Create', position: 20, label: 'Creation Time' }]
+  Creationtime;
+
+  @UI.fieldGroup: [{ qualifier: 'Change', position: 10, label: 'Changed By' }]
+  Changedby;
+
+  @UI.fieldGroup: [{ qualifier: 'Change', position: 20, label: 'Change Time' }]
+  Changetime;
+}

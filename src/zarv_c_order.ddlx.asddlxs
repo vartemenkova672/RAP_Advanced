@@ -1,0 +1,34 @@
+@Metadata.layer: #CUSTOMER
+@UI: {
+  headerInfo: {
+    typeName: 'Order',
+    typeNamePlural: 'Orders',
+    title: { type: #STANDARD, value: 'Orderid' }
+  }
+}
+annotate view ZARV_C_ORDER with
+{
+  @UI.facet: [
+    { id: 'OrderDetails', purpose: #STANDARD, type: #FIELDGROUP_REFERENCE, label: 'Order General Info', position: 10, targetQualifier: 'OrderGroup' }
+  ]
+
+  @UI: { lineItem: [{ position: 10, label: 'Order ID' }],
+         fieldGroup: [{ qualifier: 'OrderGroup', position: 10, label: 'Order ID' }] }
+  Orderid;
+
+  @UI: { lineItem: [{ position: 20, label: 'Quantity' }],
+         fieldGroup: [{ qualifier: 'OrderGroup', position: 20, label: 'Ordered Quantity' }] }
+  Quantity;
+
+  @UI: { lineItem: [{ position: 30, label: 'Net Amount' }],
+         fieldGroup: [{ qualifier: 'OrderGroup', position: 30, label: 'Net Amount' }] }
+  Netamount;
+
+  @UI: { lineItem: [{ position: 40, label: 'Gross Amount' }],
+         fieldGroup: [{ qualifier: 'OrderGroup', position: 40, label: 'Gross Amount' }] }
+  Grossamount;
+
+  @UI: { lineItem: [{ position: 50, label: 'Business Partner' }],
+         fieldGroup: [{ qualifier: 'OrderGroup', position: 50, label: 'Company Name' }] }
+  Busspartnercompany;
+}

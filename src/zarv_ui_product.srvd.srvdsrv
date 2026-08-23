@@ -1,0 +1,11 @@
+@EndUserText.label: 'Service Definition for Products App'
+define service ZARV_UI_PRODUCT {
+  expose ZARV_C_PRODUCT   as Product;
+  expose ZARV_C_MARKET    as Market;
+  expose ZARV_C_ORDER     as Orders;
+  expose ZARV_I_PG        as ProductGroupHelp;
+  expose ZARV_I_PHASE     as PhaseHelp;
+  expose ZARV_I_MARKET_VH as MarketHelp;
+  expose ZARV_I_UOM       as UomHelp;
+  expose ZARV_I_CURRENCY  as CurrencyHelp;
+}
