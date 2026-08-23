@@ -27,6 +27,6 @@ define view entity ZARV_C_ORDER
       
       /* Associations */
       _Market : redirected to parent ZARV_C_MARKET,
-      _Product: redirected to ZARV_C_PRODUCT
+      _Product
 }
 

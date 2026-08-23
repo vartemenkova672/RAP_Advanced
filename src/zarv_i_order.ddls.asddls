@@ -5,7 +5,7 @@
 define view entity ZARV_I_ORDER
   as select from zarv_d_order
   association to parent ZARV_I_MARKET as _Market on $projection.MrktUuid = _Market.MrktUuid
-  association [1..1] to ZARV_I_PRODUCT as _Product on $projection.ProdUuid = _Product.ProdUuid
+  association [0..1] to ZARV_I_PRODUCT as _Product on $projection.ProdUuid = _Product.ProdUuid
 {
   key order_uuid         as OrderUuid,
       prod_uuid          as ProdUuid,
