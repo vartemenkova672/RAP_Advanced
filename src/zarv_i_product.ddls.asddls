@@ -11,6 +11,7 @@ define root view entity ZARV_I_PRODUCT
 {
   key prod_uuid    as ProdUuid,
       prodid       as Prodid,
+      @ObjectModel.text.association: '_ProductGroup'
       pgid         as Pgid,
       phaseid      as Phaseid,
       case phaseid

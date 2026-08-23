@@ -2,10 +2,7 @@
 "BASEINFO":
 {
 "FROM":
-[
-"I_CURRENCY",
-"I_CURRENCYTEXT"
-],
+[],
 "ASSOCIATED":
 [],
 "BASE":

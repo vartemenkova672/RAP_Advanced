@@ -1,17 +1,11 @@
 managed implementation in class zarv_bp_i_product unique;
-
 strict ( 2 );
-
 
 define behavior for ZARV_I_PRODUCT alias Product
 persistent table zarv_d_product
-
 lock master
-
 authorization master ( instance )
-
 {
-
   create ( authorization : global );
   update;
   delete;
@@ -21,32 +15,32 @@ authorization master ( instance )
   field ( mandatory ) Prodid, Pgid, Price, Currency;
 
   determination calculateProdUUID on modify { create; }
-  determination setFirstPhase on modify { create; }
+  determination setFirstPhase     on modify { create; }
 
-  validation validatePG on save { create; update; field Pgid; }
+  validation validatePG     on save { create; update; field Pgid; }
   validation validateProdID on save { create; field Prodid; }
+  validation validateCurrency on save { create; update; field Currency; }
 
-  action make_copy parameter ZARV_D_PRODUCT result [1] $self;
+  action make_copy parameter ZARV_A_COPY_PARAM result [1] $self;
 
   mapping for zarv_d_product
-    {
-      ProdUuid     = prod_uuid;
-      Prodid       = prodid;
-      Pgid         = pgid;
-      Phaseid      = phaseid;
-      Height       = height;
-      Depth        = depth;
-      Width        = width;
-      Sizeuom      = sizeuom;
-      Price        = price;
-      Currency     = currency;
-      Taxrate      = taxrate;
-      Createdby    = createdby;
-      Creationtime = creationtime;
-      Changedby    = changedby;
-      Changetime   = changetime;
-      PgnameTrans  = pgname_trans;
-      TransCode    = trans_code;
-    }
-
+  {
+    ProdUuid     = prod_uuid;
+    Prodid       = prodid;
+    Pgid         = pgid;
+    Phaseid      = phaseid;
+    Height       = height;
+    Depth        = depth;
+    Width        = width;
+    Sizeuom      = sizeuom;
+    Price        = price;
+    Currency     = currency;
+    Taxrate      = taxrate;
+    Createdby    = createdby;
+    Creationtime = creationtime;
+    Changedby    = changedby;
+    Changetime   = changetime;
+    PgnameTrans  = pgname_trans;
+    TransCode    = trans_code;
+  }
 }

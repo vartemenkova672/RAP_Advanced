@@ -1,23 +1,25 @@
 @Metadata.layer: #CORE
 @Search.searchable: true
 
-@UI.headerInfo: { 
-  typeName: 'Kitchen Appliance', 
-  typeNamePlural: 'Kitchen Appliances', 
-  imageUrl: 'ProductGroupImage', 
-  title: { type: #STANDARD, label: 'Product', value: 'Prodid' }, 
-  description: { value: 'ProductGroupName', type: #STANDARD } 
+@UI.headerInfo: {
+  typeName: 'Kitchen Appliance',
+  typeNamePlural: 'Kitchen Appliances',
+  imageUrl: 'ProductGroupImage',
+  title: { type: #STANDARD, label: 'Product', value: 'Prodid' },
+  description: { value: 'ProductGroupName', type: #STANDARD }
 }
 
-@UI.presentationVariant: [{ 
-  sortOrder: [ 
-    { by: 'Prodid', direction: #ASC }, 
-    { by: 'ProductGroupName', direction: #ASC } 
-  ] 
+@UI.presentationVariant: [{
+  sortOrder: [
+    { by: 'Prodid', direction: #ASC },
+    { by: 'ProductGroupName', direction: #ASC }
+  ]
 }]
 
-annotate entity ZARV_C_PRODUCT with {
-  
+
+annotate entity ZARV_C_PRODUCT with
+{
+
   /* =========================================================================
      FACETS (STRUCTURE OF THE OBJECT PAGE)
      ========================================================================= */
@@ -40,47 +42,61 @@ annotate entity ZARV_C_PRODUCT with {
      ELEMENTS DECLARATION & UI PLACEMENT
      ========================================================================= */
 
-  @UI.lineItem: [{ position: 10 }]
+  @UI.lineItem: [
+    { position: 10  },
+    { type: #FOR_ACTION, dataAction: 'make_copy', label: 'Copy Product' }
+  ]
+  @UI.identification: [
+    { type: #FOR_ACTION, dataAction: 'make_copy', label: 'Copy Product' }
+  ]
+
   @UI.selectionField: [ { position: 10 } ]
   @UI.fieldGroup: [{ qualifier: 'Basic', position: 10 }]
-  @UI.dataPoint: { qualifier: 'dpHeaderProdId', title: 'Product ID' } 
+  @UI.dataPoint: { qualifier: 'dpHeaderProdId', title: 'Product ID' }
   @Search.defaultSearchElement: true
+  @EndUserText.label: 'Product ID'
   Prodid;
 
   @UI.lineItem: [{ position: 30, criticality: 'PhaseCriticality', criticalityRepresentation: #WITH_ICON }]
   @UI.selectionField: [ { position: 20 } ]
-  @UI.fieldGroup: [{ qualifier: 'Basic', position: 30, criticality: 'PhaseCriticality' }] 
-  PhaseName;
+  @UI.fieldGroup: [{ qualifier: 'Basic', position: 30, criticality: 'PhaseCriticality' }]
+  @EndUserText.label: 'Phase Name'
+  Phaseid;
 
   @UI.lineItem: [{ position: 20 }]
   @UI.selectionField: [ { position: 30 }]
   @EndUserText.label: 'Product Group'
   @UI.fieldGroup: [{ qualifier: 'Basic', position: 20 }]
   Pgid;
-  
+
   // --- Size Dimensions ---
   @UI.lineItem: [{ position: 60 }]
   @UI.fieldGroup: [{ qualifier: 'Size', position: 10 }]
+  @EndUserText.label: 'Height'
   Height;
 
   @UI.lineItem: [{ position: 70 }]
   @UI.fieldGroup: [{ qualifier: 'Size', position: 20 }]
+  @EndUserText.label: 'Depth'
   Depth;
 
   @UI.lineItem: [{ position: 80 }]
   @UI.fieldGroup: [{ qualifier: 'Size', position: 30 }]
+  @EndUserText.label: 'Width'
   Width;
 
   // --- Price Details ---
   @UI.lineItem: [{ position: 40 }, {label: 'Net Price'}]
   @UI.selectionField: [ { position: 40 } ]
   @UI.fieldGroup: [{ qualifier: 'Price', position: 10 }]
-  @UI.dataPoint: { qualifier: 'dpHeaderPrice', title: 'Net Price' } 
+  @UI.dataPoint: { qualifier: 'dpHeaderPrice', title: 'Net Price' }
+  @EndUserText.label: 'Net Price'
   Price;
 
   @UI.lineItem: [{ position: 50 }, {label: 'Tax Rate'}]
   @UI.fieldGroup: [{ qualifier: 'Price', position: 20 }]
-  @UI.dataPoint: { qualifier: 'dpHeaderTax', title: 'Tax Rate' } 
+  @UI.dataPoint: { qualifier: 'dpHeaderTax', title: 'Tax Rate' }
+  @EndUserText.label: 'Tax Rate'
   Taxrate;
 
   // --- Admin Information Group ---

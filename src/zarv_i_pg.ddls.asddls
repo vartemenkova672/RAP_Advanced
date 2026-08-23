@@ -5,6 +5,8 @@
 define view entity ZARV_I_PG
   as select from zarv_d_pr_group
 {
+      @ObjectModel.text.element: ['Pgname']
+      @UI.textArrangement: #TEXT_ONLY
   key pgid       as pgid,
       pgname     as pgname,
       pgimageurl as pgimageurl
