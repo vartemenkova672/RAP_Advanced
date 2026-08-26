@@ -8,7 +8,7 @@ define view entity ZARV_C_MARKET
   key MrktUuid,
       ProdUuid,
 
-      @ObjectModel.text.element: ['CountryName'] 
+      @ObjectModel.text.element: ['CountryName']
       Mrktid,
       Status,
       Startdate,
@@ -16,7 +16,7 @@ define view entity ZARV_C_MARKET
       MarketFlagUrl,
       MarketCriticality,
 
-      _Country.country                          as CountryName,
+      _Country.country as CountryName,
 
       Createdby,
       Creationtime,
