@@ -7,7 +7,20 @@ define behavior for ZARV_C_PRODUCT alias Product
   use update;
   use delete;
 
+  use association _Market { create; }
+
   field ( readonly ) Phaseid;
   use action make_copy;
+  use action move_to_next_phase;
 
+}
+
+define behavior for ZARV_C_MARKET alias Market
+{
+  use update;
+  use delete;
+
+  field ( readonly ) Status;
+
+  use association _Product;
 }

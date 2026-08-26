@@ -3,30 +3,73 @@
   headerInfo: {
     typeName: 'Market',
     typeNamePlural: 'Markets',
-    title: { type: #STANDARD, value: 'Mrktid' }
+    imageUrl: 'MarketFlagUrl', 
+    title: { type: #STANDARD, value: 'CountryName' }, 
+    description: { type: #STANDARD, value: 'Mrktid' } 
   }
 }
 annotate view ZARV_C_MARKET with
 {
+  /* =========================================================================
+     FACETS (STRUCTURE OF THE OBJECT PAGE)
+     ========================================================================= */
   @UI.facet: [
-    { id: 'MarketDetails', purpose: #STANDARD, type: #COLLECTION, label: 'Market Details', position: 10 },
-    { id: 'MarketInfo', parentId: 'MarketDetails', type: #FIELDGROUP_REFERENCE, label: 'Market Info', position: 10, targetQualifier: 'MarketGroup' },
-    { id: 'Orders', purpose: #STANDARD, type: #LINEITEM_REFERENCE, label: 'Market Orders', position: 20, targetElement: '_Order' }
+    // Object Page (Header Facets)
+    { id: 'HeaderStartDate', purpose: #HEADER, type: #DATAPOINT_REFERENCE, targetQualifier: 'dpHeaderStart', position: 10 },
+    { id: 'HeaderEndDate',   purpose: #HEADER, type: #DATAPOINT_REFERENCE, targetQualifier: 'dpHeaderEnd',   position: 20 },
+    { id: 'HeaderCountry',   purpose: #HEADER, type: #DATAPOINT_REFERENCE, targetQualifier: 'dpHeaderCountry', position: 30 },
+
+    //  1: General Information
+    { id: 'idGeneralInfo',   purpose: #STANDARD, type: #COLLECTION, label: 'General Information', position: 10 },
+    { id: 'idBasicData',     parentId: 'idGeneralInfo', type: #FIELDGROUP_REFERENCE, label: 'Basic Data', position: 10, targetQualifier: 'MarketBasic' },
+    
+    // 2: Admin Data 
+    { id: 'idAdminData',     purpose: #STANDARD, type: #COLLECTION, label: 'Admin Data', position: 20 },
+    { id: 'idCreateInfo',    parentId: 'idAdminData', type: #FIELDGROUP_REFERENCE, label: 'Create Info', position: 10, targetQualifier: 'MarketCreate' },
+    { id: 'idChangeInfo',    parentId: 'idAdminData', type: #FIELDGROUP_REFERENCE, label: 'Change Info', position: 20, targetQualifier: 'MarketChange' }
   ]
 
-  @UI: { lineItem: [{ position: 10, label: 'Market ID' }],
-         fieldGroup: [{ qualifier: 'MarketGroup', position: 10, label: 'Market ID' }] }
+  /* =========================================================================
+     ELEMENTS DECLARATION & UI PLACEMENT
+     ========================================================================= */
+  
+  @EndUserText.label: 'Market'
+  @UI.textArrangement: #TEXT_ONLY 
+  @UI: { lineItem:   [{ position: 10 }],
+         fieldGroup: [{ qualifier: 'MarketBasic', position: 10 }], 
+         dataPoint:  { qualifier: 'dpHeaderCountry', title: 'Country' } }
   Mrktid;
 
-  @UI: { lineItem: [{ position: 20, label: 'Status' }],
-         fieldGroup: [{ qualifier: 'MarketGroup', position: 20, label: 'Confirmation Status' }] }
+  @EndUserText.label: 'Confirmed?'
+  @UI: { lineItem:   [{ position: 20, criticality: 'MarketCriticality', criticalityRepresentation: #WITH_ICON }],
+         fieldGroup: [{ qualifier: 'MarketBasic', position: 20, criticality: 'MarketCriticality', criticalityRepresentation: #WITH_ICON }] }
   Status;
 
-  @UI: { lineItem: [{ position: 30, label: 'Start Date' }],
-         fieldGroup: [{ qualifier: 'MarketGroup', position: 30, label: 'Start Date' }] }
+  @EndUserText.label: 'Start Date'
+  @UI: { lineItem:   [{ position: 30 }],
+         fieldGroup: [{ qualifier: 'MarketBasic', position: 30 }],
+         dataPoint:  { qualifier: 'dpHeaderStart', title: 'Start Date' } }
   Startdate;
 
-  @UI: { lineItem: [{ position: 40, label: 'End Date' }],
-         fieldGroup: [{ qualifier: 'MarketGroup', position: 40, label: 'End Date' }] }
+  @EndUserText.label: 'End Date'
+  @UI: { lineItem:   [{ position: 40 }],
+         fieldGroup: [{ qualifier: 'MarketBasic', position: 40 }],
+         dataPoint:  { qualifier: 'dpHeaderEnd', title: 'End Date' } }
   Enddate;
+
+  @EndUserText.label: 'Created By'
+  @UI.fieldGroup: [{ qualifier: 'MarketCreate', position: 10 }]
+  Createdby;
+
+  @EndUserText.label: 'Create Time'
+  @UI.fieldGroup: [{ qualifier: 'MarketCreate', position: 20 }]
+  Creationtime;
+
+  @EndUserText.label: 'Changed By'
+  @UI.fieldGroup: [{ qualifier: 'MarketChange', position: 10 }]
+  Changedby;
+
+  @EndUserText.label: 'Change Time'
+  @UI.fieldGroup: [{ qualifier: 'MarketChange', position: 20 }]
+  Changetime;
 }

@@ -3,7 +3,8 @@
 {
 "FROM":
 [
-"ZARV_I_MARKET"
+"ZARV_I_MARKET",
+"ZARV_D_COUNTRY"
 ],
 "ASSOCIATED":
 [

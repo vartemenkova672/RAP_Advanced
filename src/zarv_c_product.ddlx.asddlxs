@@ -35,8 +35,15 @@ annotate entity ZARV_C_PRODUCT with
 
     { id: 'idAdmGrp',          type: #COLLECTION,           label: 'Admin Information',   position: 20 },
     { id: 'idCreate',          type: #FIELDGROUP_REFERENCE, label: 'Create Info',         position: 10, parentId: 'idAdmGrp',  targetQualifier: 'Create' },
-    { id: 'idChange',          type: #FIELDGROUP_REFERENCE, label: 'Change Info',         position: 20, parentId: 'idAdmGrp',  targetQualifier: 'Change' }
-  ]
+    { id: 'idChange',          type: #FIELDGROUP_REFERENCE, label: 'Change Info',         position: 20, parentId: 'idAdmGrp',  targetQualifier: 'Change' },
+
+      { id:            'idMarkets',
+      purpose:       #STANDARD,
+      type:          #LINEITEM_REFERENCE,
+      label:         'Markets',
+      position:      30,
+      targetElement: '_Market' }
+       ]
 
   /* =========================================================================
      ELEMENTS DECLARATION & UI PLACEMENT
@@ -44,10 +51,12 @@ annotate entity ZARV_C_PRODUCT with
 
   @UI.lineItem: [
     { position: 10  },
-    { type: #FOR_ACTION, dataAction: 'make_copy', label: 'Copy Product' }
+    { type: #FOR_ACTION, dataAction: 'make_copy', label: 'Copy Product' },
+    { type: #FOR_ACTION, dataAction: 'move_to_next_phase', label: 'Next Phase' }
   ]
   @UI.identification: [
-    { type: #FOR_ACTION, dataAction: 'make_copy', label: 'Copy Product' }
+    { type: #FOR_ACTION, dataAction: 'make_copy', label: 'Copy Product' },
+    { type: #FOR_ACTION, dataAction: 'move_to_next_phase', label: 'Next Phase' }
   ]
 
   @UI.selectionField: [ { position: 10 } ]
@@ -57,7 +66,9 @@ annotate entity ZARV_C_PRODUCT with
   @EndUserText.label: 'Product ID'
   Prodid;
 
-  @UI.lineItem: [{ position: 30, criticality: 'PhaseCriticality', criticalityRepresentation: #WITH_ICON }]
+  @UI.lineItem: [
+    { position: 30, criticality: 'PhaseCriticality', criticalityRepresentation: #WITH_ICON }
+  ]
   @UI.selectionField: [ { position: 20 } ]
   @UI.fieldGroup: [{ qualifier: 'Basic', position: 30, criticality: 'PhaseCriticality' }]
   @EndUserText.label: 'Phase Name'
