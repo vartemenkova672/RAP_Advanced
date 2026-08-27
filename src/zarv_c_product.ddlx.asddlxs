@@ -122,4 +122,5 @@ annotate entity ZARV_C_PRODUCT with
 
   @UI.fieldGroup: [{ qualifier: 'Change', position: 20, label: 'Change Time' }]
   Changetime;
+  
 }

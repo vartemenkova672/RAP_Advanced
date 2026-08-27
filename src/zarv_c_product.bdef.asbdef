@@ -23,4 +23,5 @@ define behavior for ZARV_C_MARKET alias Market
   field ( readonly ) Status;
 
   use association _Product;
+  use action confirmMarketByProduct;
 }

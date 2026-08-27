@@ -49,6 +49,7 @@ authorization master ( instance )
 }
 
 define behavior for ZARV_I_MARKET alias Market
+implementation in class ZARV_CL_BP_I_PROD_MRKT unique
 persistent table zarv_d_market
 lock dependent by _Product
 authorization dependent by _Product
@@ -62,6 +63,14 @@ authorization dependent by _Product
   field ( mandatory ) Mrktid, Startdate;
 
   association _Product;
+
+  determination setInitialStatus on modify { create; }
+
+  validation validateMarket on save { create; update; field Mrktid; }
+  validation validateStartDate on save { create; update; field Startdate; }
+  validation validateDates on save { create; update; field Startdate, Enddate; }
+  validation checkDuplicates on save { create; update; field Mrktid; }
+  action ( features : instance ) confirmMarketByProduct result [1] $self;
 
   mapping for zarv_d_market
     {

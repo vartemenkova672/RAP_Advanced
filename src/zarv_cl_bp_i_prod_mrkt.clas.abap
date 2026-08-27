@@ -1,0 +1,5 @@
+CLASS zarv_cl_bp_i_prod_mrkt DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF zarv_i_product.
+ENDCLASS.
+
+CLASS zarv_cl_bp_i_prod_mrkt IMPLEMENTATION.
+ENDCLASS.

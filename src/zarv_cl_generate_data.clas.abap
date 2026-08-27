@@ -109,15 +109,15 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
     DATA lt_country TYPE STANDARD TABLE OF zarv_d_country WITH EMPTY KEY.
     lt_country = VALUE #(
       ( mandt = sy-mandt mrktid = 'US' country = 'United States' code = 'US'
-        imageurl = 'https://example.com/us.png' )
+        imageurl = 'https://www.countryflags.com/wp-content/uploads/united-states-of-america-flag-png-large.png' )
       ( mandt = sy-mandt mrktid = 'DE' country = 'Germany'       code = 'DE'
-        imageurl = 'https://example.com/de.png' )
+        imageurl = 'https://www.countryflags.com/wp-content/uploads/germany-flag-png-large.png' )
       ( mandt = sy-mandt mrktid = 'FR' country = 'France'        code = 'FR'
-        imageurl = 'https://example.com/fr.png' )
+        imageurl = 'https://www.countryflags.com/wp-content/uploads/france-flag-png-large.png' )
       ( mandt = sy-mandt mrktid = 'ES' country = 'Spain'         code = 'ES'
-        imageurl = 'https://example.com/es.png' )
+        imageurl = 'https://www.countryflags.com/wp-content/uploads/spain-flag-png-large.png' )
       ( mandt = sy-mandt mrktid = 'IT' country = 'Italy'         code = 'IT'
-        imageurl = 'https://example.com/it.png' )
+        imageurl = 'https://www.countryflags.com/wp-content/uploads/italy-flag-png-large.png' )
     ).
     INSERT zarv_d_country FROM TABLE @lt_country.
 
@@ -127,7 +127,7 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
     "4) Products (5)
     "------------------------------------------------------------
     DATA lt_prod_uuid TYPE STANDARD TABLE OF sysuuid_x16 WITH EMPTY KEY.
-    DO 5 TIMES.
+    DO 6 TIMES.
       APPEND get_uuid( ) TO lt_prod_uuid.
     ENDDO.
 
@@ -165,6 +165,13 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
         prodid = 'P-0005' pgid = lv_pgid_fridge phaseid = 'DEV'
         height = '1.800' depth = '0.700' width = '0.600' sizeuom = 'M'
         price = '899.99' currency = 'EUR' taxrate = '22.00'
+        pgname_trans = 'Fridge' trans_code = 'EN'
+        createdby = sy-uname creationtime = lv_ts changedby = sy-uname changetime = lv_ts )
+
+         ( mandt = sy-mandt prod_uuid = lt_prod_uuid[ 6 ]
+        prodid = 'P-0006' pgid = lv_pgid_fridge phaseid = 'PLAN'
+        height = '1.900' depth = '0.800' width = '0.800' sizeuom = 'M'
+        price = '1989.99' currency = 'EUR' taxrate = '20.00'
         pgname_trans = 'Fridge' trans_code = 'EN'
         createdby = sy-uname creationtime = lv_ts changedby = sy-uname changetime = lv_ts )
     ).

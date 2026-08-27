@@ -1,6 +1,8 @@
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'Markets Projection View'
 @Metadata.allowExtensions: true
+@Search.searchable: true
+
 define view entity ZARV_C_MARKET
   as projection on ZARV_I_MARKET
 {
@@ -8,7 +10,9 @@ define view entity ZARV_C_MARKET
   key MrktUuid,
       ProdUuid,
 
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'ZARV_I_MARKET_VH', element: 'Mrktid' } }]
       @ObjectModel.text.element: ['CountryName']
+      @Search.defaultSearchElement: true
       Mrktid,
       Status,
       Startdate,
@@ -16,6 +20,8 @@ define view entity ZARV_C_MARKET
       MarketFlagUrl,
       MarketCriticality,
 
+      @Search.defaultSearchElement: true
+      @Search.fuzzinessThreshold: 0.8
       _Country.country as CountryName,
 
       Createdby,
