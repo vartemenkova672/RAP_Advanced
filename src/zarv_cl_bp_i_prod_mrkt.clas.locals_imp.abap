@@ -1,3 +1,8 @@
+CLASS lcl_context_buffer DEFINITION.
+  PUBLIC SECTION.
+    CLASS-DATA gv_skip_validations TYPE abap_bool.
+ENDCLASS.
+
 CLASS lhc_Market DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
@@ -51,20 +56,27 @@ CLASS lhc_Market IMPLEMENTATION.
   ENDMETHOD.
 
  METHOD confirmMarketByProduct.
-    " FIXED: Modifying STATUS field to 'CONFIRMED' to match your database text format
-    MODIFY ENTITIES OF zarv_i_product IN LOCAL MODE
-      ENTITY Market
-        UPDATE FIELDS ( Status )
-        WITH VALUE #( FOR key IN keys ( %tky = key-%tky Status = 'CONFIRMED' ) )
-      REPORTED DATA(lt_reported).
 
-    READ ENTITIES OF zarv_i_product IN LOCAL MODE
-      ENTITY Market
-        ALL FIELDS WITH CORRESPONDING #( keys )
-      RESULT DATA(lt_updated).
+  lcl_context_buffer=>gv_skip_validations = abap_true.
 
-    result = VALUE #( FOR ls_upd IN lt_updated ( %tky = ls_upd-%tky %param = ls_upd ) ).
-  ENDMETHOD.
+  MODIFY ENTITIES OF zarv_i_product IN LOCAL MODE
+    ENTITY Market
+      UPDATE FIELDS ( Status )
+      WITH VALUE #( FOR key IN keys ( %tky = key-%tky Status = 'YES' ) )
+    REPORTED DATA(lt_reported).
+
+  reported = CORRESPONDING #( DEEP lt_reported ).
+
+  READ ENTITIES OF zarv_i_product IN LOCAL MODE
+    ENTITY Market
+      ALL FIELDS WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_updated).
+
+  result = VALUE #( FOR ls_upd IN lt_updated ( %tky = ls_upd-%tky %param = ls_upd ) ).
+
+  lcl_context_buffer=>gv_skip_validations = abap_false.
+ENDMETHOD.
+
 
    METHOD setInitialStatus.
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
@@ -77,7 +89,6 @@ CLASS lhc_Market IMPLEMENTATION.
         UPDATE FIELDS ( Status Startdate )
         WITH VALUE #( FOR ls_market IN lt_markets (
           %tky      = ls_market-%tky
-          " FIXED: Setting default status value to 'NEW' text string
           Status    = COND #( WHEN ls_market-Status IS INITIAL THEN 'NEW' ELSE ls_market-Status )
           Startdate = COND #( WHEN ls_market-Startdate IS INITIAL THEN cl_abap_context_info=>get_system_date( ) ELSE ls_market-Startdate )
         ) )
@@ -85,6 +96,7 @@ CLASS lhc_Market IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD validateStartDate.
+   IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
     " VALIDATE_START_DATE: STARTDATE must be >= today's date
     DATA(lv_today) = cl_abap_context_info=>get_system_date( ).
 
@@ -111,6 +123,7 @@ CLASS lhc_Market IMPLEMENTATION.
   ENDMETHOD.
 
    METHOD validateMarket.
+    IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
     " VALIDATE_MARKET: MRKTID value must be present and exist in SAP standard CDS view (I_Country)
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY Market
@@ -175,6 +188,7 @@ CLASS lhc_Market IMPLEMENTATION.
 
 
   METHOD validateDates.
+   IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
     " VALIDATE_END_DATE: if present, must be > today and STARTDATE
     DATA(lv_today) = cl_abap_context_info=>get_system_date( ).
 
@@ -218,6 +232,7 @@ CLASS lhc_Market IMPLEMENTATION.
   ENDMETHOD.
 
    METHOD checkDuplicates.
+    IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
     " CHECK_DUPLICATES: product cannot have markets with the same MRKTID
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY Market

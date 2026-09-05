@@ -7,7 +7,7 @@
     title: { type: #STANDARD, value: 'CountryName' },
     description: { type: #STANDARD, value: 'Mrktid' }
   },
-    presentationVariant: [{
+  presentationVariant: [{
     sortOrder: [
       { by: 'Mrktid', direction: #ASC },
       { by: 'Status', direction: #ASC }
@@ -38,31 +38,45 @@ annotate view ZARV_C_MARKET with
   /* =========================================================================
      ELEMENTS DECLARATION & UI PLACEMENT
      ========================================================================= */
-
+     
   @EndUserText.label: 'Market'
   @UI.textArrangement: #TEXT_ONLY
-  @UI: { lineItem:   [{ position: 10 }],
-         fieldGroup: [{ qualifier: 'MarketBasic', position: 10 }],
-         selectionField: [{ position: 10 }],
-         dataPoint:  { qualifier: 'dpHeaderCountry', title: 'Country' } }
+  @UI: { 
+    lineItem: [
+      { position: 10 },
+      { type: #FOR_ACTION, dataAction: 'confirmMarketByProduct', label: 'Confirm' }
+    ],
+    identification: [
+      { type: #FOR_ACTION, dataAction: 'confirmMarketByProduct', label: 'Confirm' }
+    ],
+    fieldGroup:     [{ qualifier: 'MarketBasic', position: 10 }],
+    selectionField: [{ position: 10 }],
+    dataPoint:      { qualifier: 'dpHeaderCountry', title: 'Country' } 
+  }
   Mrktid;
 
   @EndUserText.label: 'Confirmed?'
-  @UI: { lineItem:   [{ position: 20, criticality: 'MarketCriticality', criticalityRepresentation: #WITH_ICON }],
-         fieldGroup: [{ qualifier: 'MarketBasic', position: 20, criticality: 'MarketCriticality', criticalityRepresentation: #WITH_ICON }],
-          selectionField: [{ position: 20 }] }
+  @UI: { 
+    lineItem:       [{ position: 20, criticality: 'MarketCriticality', criticalityRepresentation: #WITH_ICON }],
+    fieldGroup:     [{ qualifier: 'MarketBasic', position: 20, criticality: 'MarketCriticality', criticalityRepresentation: #WITH_ICON }],
+    selectionField: [{ position: 20 }] 
+  }
   Status;
 
   @EndUserText.label: 'Start Date'
-  @UI: { lineItem:   [{ position: 30 }],
-         fieldGroup: [{ qualifier: 'MarketBasic', position: 30 }],
-         dataPoint:  { qualifier: 'dpHeaderStart', title: 'Start Date' } }
+  @UI: { 
+    lineItem:       [{ position: 30 }],
+    fieldGroup:     [{ qualifier: 'MarketBasic', position: 30 }],
+    dataPoint:      { qualifier: 'dpHeaderStart', title: 'Start Date' } 
+  }
   Startdate;
 
   @EndUserText.label: 'End Date'
-  @UI: { lineItem:   [{ position: 40 }],
-         fieldGroup: [{ qualifier: 'MarketBasic', position: 40 }],
-         dataPoint:  { qualifier: 'dpHeaderEnd', title: 'End Date' } }
+  @UI: { 
+    lineItem:       [{ position: 40 }],
+    fieldGroup:     [{ qualifier: 'MarketBasic', position: 40 }],
+    dataPoint:      { qualifier: 'dpHeaderEnd', title: 'End Date' } 
+  }
   Enddate;
 
   @EndUserText.label: 'Created By'

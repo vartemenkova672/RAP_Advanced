@@ -190,7 +190,7 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
     DATA lt_market TYPE STANDARD TABLE OF zarv_d_market WITH EMPTY KEY.
     lt_market = VALUE #(
       ( mandt = sy-mandt mrkt_uuid = lt_mrkt_uuid[ 1 ] prod_uuid = lt_prod_uuid[ 1 ]
-        mrktid = 'US' status = 'NEW'
+        mrktid = 'US' status = 'YES'
         startdate = lv_date enddate = lv_date + 180 isocode = 'US'
         createdby = sy-uname creationtime = lv_ts changedby = sy-uname changetime = lv_ts )
 

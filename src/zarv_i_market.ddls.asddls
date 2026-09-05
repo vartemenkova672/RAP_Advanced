@@ -18,8 +18,8 @@ define view entity ZARV_I_MARKET
       _Country.imageurl as MarketFlagUrl,
 
       case status
-        when 'X'         then 3
-        when 'CONFIRMED' then 3
+        when 'YES'         then 3
+        when 'NEW'         then 1
         else                  1
       end               as MarketCriticality,
 
