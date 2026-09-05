@@ -90,6 +90,7 @@ authorization dependent by _Product
 }
 
 define behavior for ZARV_I_ORDER alias MarketOrder
+implementation in class ZARV_CL_BP_I_MRKT_ORDER unique
 persistent table zarv_d_order
 lock dependent by _Product
 authorization dependent by _Product
@@ -97,6 +98,13 @@ authorization dependent by _Product
 
   update;
   delete;
+
+  determination calculate_orderid on modify { create; }
+  determination set_calendar_year on modify { field DeliveryDate; }
+  determination calculate_amount on modify { field Quantity; }
+
+  validation validate_delivery_date on save { create; update; field DeliveryDate; }
+
 
   field ( readonly, numbering : managed ) OrderUuid;
   field ( readonly ) ProdUuid, MrktUuid;

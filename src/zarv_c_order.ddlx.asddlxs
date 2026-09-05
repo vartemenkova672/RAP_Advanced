@@ -1,9 +1,11 @@
 @Metadata.layer: #CUSTOMER
+@Search.searchable: true
 @UI: {
   headerInfo: {
     typeName: 'Order',
     typeNamePlural: 'Orders',
-     imageUrl: 'OrderImageUrl'
+     imageUrl: 'OrderImageUrl',
+     title: { type: #STANDARD, label: 'Order', value: 'Orderid' }
       },
 
     presentationVariant: [{
@@ -42,6 +44,7 @@ annotate view ZARV_C_ORDER with
   @UI: { lineItem:   [{ position: 10, label: 'Order ID' }],
          fieldGroup: [{ qualifier: 'OrderGroup', position: 10, label: 'Order ID:' }] }
   @UI.dataPoint: { qualifier: 'dpOrderId', title: 'Order ID' }
+  @Search.defaultSearchElement: true
   Orderid;
 
   @UI: { lineItem:   [{ position: 20, label: 'Quantity' }],
@@ -50,6 +53,7 @@ annotate view ZARV_C_ORDER with
 
   @UI: { lineItem:   [{ position: 30, label: 'Delivery Date' }],
          fieldGroup: [{ qualifier: 'OrderGroup', position: 30, label: 'Delivery Date:' }] }
+  @Search.defaultSearchElement: true
   DeliveryDate;
 
   @UI: { lineItem:   [{ position: 40, label: 'Net Amount' }] }
