@@ -23,5 +23,18 @@ define behavior for ZARV_C_MARKET alias Market
   field ( readonly ) Status;
 
   use association _Product;
+  use association _Order{ create; }
   use action confirmMarketByProduct;
+}
+
+define behavior for ZARV_C_ORDER alias _tOrder
+{
+
+  use update;
+  use delete;
+
+  field ( readonly ) Orderid, Currency, Netamount, Grossamount, CalendarYear;
+
+  use association _Market;
+  use association _Product;
 }

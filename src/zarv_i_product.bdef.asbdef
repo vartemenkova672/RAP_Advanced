@@ -57,6 +57,7 @@ authorization dependent by _Product
   update;
   delete;
 
+  association _Order { create ( features : instance ); }
 
   field ( numbering : managed, readonly ) MrktUuid;
   field ( readonly ) ProdUuid, Changetime, Changedby, Creationtime, Createdby;
@@ -85,5 +86,47 @@ authorization dependent by _Product
       Creationtime = creationtime;
       Changedby    = changedby;
       Changetime   = changetime;
+    }
+}
+
+define behavior for ZARV_I_ORDER alias MarketOrder
+persistent table zarv_d_order
+lock dependent by _Product
+authorization dependent by _Product
+{
+
+  update;
+  delete;
+
+  field ( readonly, numbering : managed ) OrderUuid;
+  field ( readonly ) ProdUuid, MrktUuid;
+
+  field ( readonly ) Changetime, Changedby, Creationtime, Createdby;
+
+  field ( mandatory ) Quantity, DeliveryDate;
+
+  association _Market;
+  association _Product;
+
+  mapping for zarv_d_order
+    {
+      OrderUuid          = order_uuid;
+      ProdUuid           = prod_uuid;
+      MrktUuid           = mrkt_uuid;
+      Orderid            = orderid;
+      Quantity           = quantity;
+      DeliveryDate       = delivery_date;
+      CalendarYear       = calendar_year;
+      Netamount          = netamount;
+      Grossamount        = grossamount;
+      Currency           = currency;
+      Busspartner        = busspartner;
+      Busspartnercompany = busspartnercompany;
+      Busspartneremail   = busspartneremail;
+      Busspartnerphone   = busspartnerphone;
+      Createdby          = createdby;
+      Creationtime       = creationtime;
+      Changedby          = changedby;
+      Changetime         = changetime;
     }
 }

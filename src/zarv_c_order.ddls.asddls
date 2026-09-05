@@ -24,9 +24,10 @@ define view entity ZARV_C_ORDER
       Creationtime,
       Changedby,
       Changetime,
-      
-      /* Associations */
-      _Market : redirected to parent ZARV_C_MARKET,
-      _Product
-}
+      OrderImageUrl,
 
+
+      /* Associations */
+      _Market  : redirected to parent ZARV_C_MARKET,
+      _Product : redirected to ZARV_C_PRODUCT
+}

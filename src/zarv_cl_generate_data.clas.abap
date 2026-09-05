@@ -230,7 +230,7 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
     lt_order = VALUE #(
       ( mandt = sy-mandt order_uuid = lt_ord_uuid[ 1 ]
         prod_uuid = lt_prod_uuid[ 1 ] mrkt_uuid = lt_mrkt_uuid[ 1 ]
-        orderid = 1001 quantity = 2
+        orderid = 1 quantity = 2
         delivery_date = lv_date + 14
         calendar_year = lv_year
         netamount = '199.99' grossamount = '239.99' currency = 'USD'
@@ -240,7 +240,7 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
 
       ( mandt = sy-mandt order_uuid = lt_ord_uuid[ 2 ]
         prod_uuid = lt_prod_uuid[ 2 ] mrkt_uuid = lt_mrkt_uuid[ 2 ]
-        orderid = 1002 quantity = 1
+        orderid = 2 quantity = 1
         delivery_date = lv_date + 10
         calendar_year = lv_year
         netamount = '499.99' grossamount = '594.99' currency = 'EUR'
@@ -250,7 +250,7 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
 
       ( mandt = sy-mandt order_uuid = lt_ord_uuid[ 3 ]
         prod_uuid = lt_prod_uuid[ 3 ] mrkt_uuid = lt_mrkt_uuid[ 3 ]
-        orderid = 1003 quantity = 3
+        orderid = 3 quantity = 3
         delivery_date = lv_date + 21
         calendar_year = lv_year
         netamount = '59.99' grossamount = '72.59' currency = 'EUR'
@@ -260,7 +260,7 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
 
       ( mandt = sy-mandt order_uuid = lt_ord_uuid[ 4 ]
         prod_uuid = lt_prod_uuid[ 4 ] mrkt_uuid = lt_mrkt_uuid[ 4 ]
-        orderid = 1004 quantity = 1
+        orderid = 4 quantity = 1
         delivery_date = lv_date + 7
         calendar_year = lv_year
         netamount = '89.99' grossamount = '106.19' currency = 'EUR'
@@ -270,7 +270,7 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
 
       ( mandt = sy-mandt order_uuid = lt_ord_uuid[ 5 ]
         prod_uuid = lt_prod_uuid[ 5 ] mrkt_uuid = lt_mrkt_uuid[ 5 ]
-        orderid = 1005 quantity = 2
+        orderid = 5 quantity = 2
         delivery_date = lv_date + 12
         calendar_year = lv_year
         netamount = '899.99' grossamount = '1097.99' currency = 'EUR'

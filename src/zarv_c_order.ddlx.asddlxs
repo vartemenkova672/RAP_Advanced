@@ -3,32 +3,89 @@
   headerInfo: {
     typeName: 'Order',
     typeNamePlural: 'Orders',
-    title: { type: #STANDARD, value: 'Orderid' }
-  }
+     imageUrl: 'OrderImageUrl'
+      },
+
+    presentationVariant: [{
+    sortOrder: [
+      { by: 'DeliveryDate', direction: #ASC }    ]
+  }]
 }
 annotate view ZARV_C_ORDER with
 {
+  /* =========================================================================
+     FACETS (STRUCTURE OF THE OBJECT PAGE)
+     ========================================================================= */
   @UI.facet: [
-    { id: 'OrderDetails', purpose: #STANDARD, type: #FIELDGROUP_REFERENCE, label: 'Order General Info', position: 10, targetQualifier: 'OrderGroup' }
-  ]
+    { id: 'idHeaderGrossAmount', purpose: #HEADER, type: #DATAPOINT_REFERENCE, position: 10, targetQualifier: 'dpGrossAmount' },
+    { id: 'idHeaderNetAmount',   purpose: #HEADER, type: #DATAPOINT_REFERENCE, position: 20, targetQualifier: 'dpNetAmount' },
+    { id: 'idOrderId',           purpose: #HEADER, type: #DATAPOINT_REFERENCE, position: 30, targetQualifier: 'dpOrderId' },
 
-  @UI: { lineItem: [{ position: 10, label: 'Order ID' }],
-         fieldGroup: [{ qualifier: 'OrderGroup', position: 10, label: 'Order ID' }] }
+    { id: 'idGeneralInfo',     type: #COLLECTION,           label: 'General Information', position: 10 },
+    { id: 'idOrderBasicData',  type: #FIELDGROUP_REFERENCE, label: 'Basic Data',          position: 10, parentId: 'idGeneralInfo', targetQualifier: 'OrderGroup' },
+
+    { id: 'idAdminData',       type: #COLLECTION,           label: 'Admin Data',          position: 20 },
+    { id: 'idCreate',          type: #FIELDGROUP_REFERENCE, label: 'Create Info',         position: 10, parentId: 'idAdminData',   targetQualifier: 'CreateInfo' },
+    { id: 'idChange',          type: #FIELDGROUP_REFERENCE, label: 'Change Info',         position: 20, parentId: 'idAdminData',   targetQualifier: 'ChangeInfo' }
+  ]
+     /* =========================================================================
+        ELEMENTS DECLARATION & UI PLACEMENT
+        ========================================================================= */
+
+  @UI.hidden: true
+  OrderUuid;
+  @UI.hidden: true
+  ProdUuid;
+  @UI.hidden: true
+  MrktUuid;
+
+  @UI: { lineItem:   [{ position: 10, label: 'Order ID' }],
+         fieldGroup: [{ qualifier: 'OrderGroup', position: 10, label: 'Order ID:' }] }
+  @UI.dataPoint: { qualifier: 'dpOrderId', title: 'Order ID' }
   Orderid;
 
-  @UI: { lineItem: [{ position: 20, label: 'Quantity' }],
-         fieldGroup: [{ qualifier: 'OrderGroup', position: 20, label: 'Ordered Quantity' }] }
+  @UI: { lineItem:   [{ position: 20, label: 'Quantity' }],
+         fieldGroup: [{ qualifier: 'OrderGroup', position: 40, label: 'Quantity:' }] }
   Quantity;
 
-  @UI: { lineItem: [{ position: 30, label: 'Net Amount' }],
-         fieldGroup: [{ qualifier: 'OrderGroup', position: 30, label: 'Net Amount' }] }
+  @UI: { lineItem:   [{ position: 30, label: 'Delivery Date' }],
+         fieldGroup: [{ qualifier: 'OrderGroup', position: 30, label: 'Delivery Date:' }] }
+  DeliveryDate;
+
+  @UI: { lineItem:   [{ position: 40, label: 'Net Amount' }] }
+  @UI.dataPoint: { qualifier: 'dpNetAmount', title: 'Net Amount' }
   Netamount;
 
-  @UI: { lineItem: [{ position: 40, label: 'Gross Amount' }],
-         fieldGroup: [{ qualifier: 'OrderGroup', position: 40, label: 'Gross Amount' }] }
+  @UI: { lineItem:   [{ position: 50, label: 'Gross Amount' }] }
+  @UI.dataPoint: { qualifier: 'dpGrossAmount', title: 'Cross Amount' }
   Grossamount;
 
-  @UI: { lineItem: [{ position: 50, label: 'Business Partner' }],
-         fieldGroup: [{ qualifier: 'OrderGroup', position: 50, label: 'Company Name' }] }
+  @UI: { lineItem:   [{ position: 50, label: 'Gross Amount' }] }
+  Currency;
+
+  @UI: { lineItem:   [{ position: 60, label: 'Year' }],
+         fieldGroup: [{ qualifier: 'OrderGroup', position: 20, label: 'Year:' }] }
+  CalendarYear;
+
+  @UI.lineItem: [{ position: 70, label: 'Business Partner' }]
   Busspartnercompany;
+
+  @UI.hidden: true
+  Busspartner;
+  @UI.hidden: true
+  Busspartneremail;
+  @UI.hidden: true
+  Busspartnerphone;
+
+  @UI.fieldGroup: [{ qualifier: 'CreateInfo', position: 10, label: 'Created By:' }]
+  Createdby;
+
+  @UI.fieldGroup: [{ qualifier: 'CreateInfo', position: 20, label: 'Create Time:' }]
+  Creationtime;
+
+  @UI.fieldGroup: [{ qualifier: 'ChangeInfo', position: 10, label: 'Changed By:' }]
+  Changedby;
+
+  @UI.fieldGroup: [{ qualifier: 'ChangeInfo', position: 20, label: 'Change Time:' }]
+  Changetime;
 }

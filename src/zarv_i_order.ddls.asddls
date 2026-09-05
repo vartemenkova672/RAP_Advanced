@@ -32,6 +32,7 @@ define view entity ZARV_I_ORDER
       changedby          as Changedby,
       @Semantics.systemDateTime.lastChangedAt: true
       changetime         as Changetime,
+      cast( 'https://thumbs.dreamstime.com/b/upload-12922548.jpg?w=768' as abap.char( 255 ) ) as OrderImageUrl,  
       
       _Market,
       _Product
