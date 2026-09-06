@@ -8,11 +8,34 @@
      title: { type: #STANDARD, label: 'Order', value: 'Orderid' }
       },
 
-    presentationVariant: [{
-    sortOrder: [
-      { by: 'DeliveryDate', direction: #ASC }    ]
-  }]
+   // 1. Definition of the chart visual structures
+   chart: [
+    {
+      qualifier:   'chartQuantity',
+      chartType:   #BAR,
+      dimensions:  [ 'DeliveryDate' ],
+      measures:    [ 'Quantity' ],
+      dimensionAttributes: [{ dimension: 'DeliveryDate', role: #CATEGORY }],
+      measureAttributes:   [{ measure: 'Quantity',     role: #AXIS_1 }]
+    },
+    {
+      qualifier:   'chartAmount',
+      chartType:   #BAR,
+      dimensions:  [ 'DeliveryDate' ],
+      measures:    [ 'Netamount', 'Grossamount' ],
+      dimensionAttributes: [{ dimension: 'DeliveryDate', role: #CATEGORY }],
+      measureAttributes:   [{ measure: 'Netamount',    role: #AXIS_1 },
+                            { measure: 'Grossamount',  role: #AXIS_1 }]
+    }
+  ],
+
+  presentationVariant: [
+    {
+      sortOrder: [ { by: 'DeliveryDate', direction: #ASC } ]
+    }
+  ]
 }
+
 annotate view ZARV_C_ORDER with
 {
   /* =========================================================================

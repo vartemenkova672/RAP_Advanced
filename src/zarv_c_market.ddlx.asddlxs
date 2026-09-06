@@ -7,6 +7,27 @@
     title: { type: #STANDARD, value: 'CountryName' },
     description: { type: #STANDARD, value: 'Mrktid' }
   },
+
+    chart: [
+    {
+      qualifier:   'chartMarketQuantity',
+      chartType:   #DONUT,
+      dimensions:  [ 'CountryName' ],
+      measures:    [ 'TotalQuantity' ],
+      dimensionAttributes: [{ dimension: 'Mrktid',        role: #CATEGORY }],
+      measureAttributes:   [{ measure: 'TotalQuantity',  role: #AXIS_1 }]
+    },
+    {
+      qualifier:   'chartMarketAmount',
+      chartType:   #BAR,
+      dimensions:  [ 'CountryName' ],
+      measures:    [ 'TotalNetAmount', 'TotalGrossAmount' ],
+      dimensionAttributes: [{ dimension: 'Mrktid',        role: #CATEGORY }],
+      measureAttributes:   [{ measure: 'TotalNetAmount',   role: #AXIS_1 },
+                            { measure: 'TotalGrossAmount', role: #AXIS_1 }]
+    }
+  ],
+
   presentationVariant: [{
     sortOrder: [
       { by: 'Mrktid', direction: #ASC },
@@ -34,8 +55,32 @@ annotate view ZARV_C_MARKET with
     { id: 'idCreateInfo',    parentId: 'idAdminData', type: #FIELDGROUP_REFERENCE, label: 'Create Info', position: 10, targetQualifier: 'MarketCreate' },
     { id: 'idChangeInfo',    parentId: 'idAdminData', type: #FIELDGROUP_REFERENCE, label: 'Change Info', position: 20, targetQualifier: 'MarketChange' },
 
-    // 3: Orders
-    { id: 'idOrders', purpose: #STANDARD, type: #LINEITEM_REFERENCE, label: 'Orders', position: 30, targetElement: '_Order' }
+     // 3: Orders Table View (Tab 1)
+    { id:            'idOrdersTable',
+      purpose:       #STANDARD,
+      type:          #LINEITEM_REFERENCE,
+      label:         'Orders',
+      position:      30,
+      targetElement: '_Order' },
+
+    // 4: Order Quantity Chart View (Tab 2)
+    { id:            'idChartQuantityTab',
+      purpose:       #STANDARD,
+      type:          #CHART_REFERENCE,
+      label:         'Order Quantity',
+      position:      40,
+      targetQualifier: 'chartQuantity',
+      targetElement: '_Order' },
+
+    // 5: Order Amount Chart View (Tab 3)
+    { id:            'idChartAmountTab',
+      purpose:       #STANDARD,
+      type:          #CHART_REFERENCE,
+      label:         'Order Amount',
+      position:      50,
+      targetQualifier: 'chartAmount',
+      targetElement: '_Order' }
+
   ]
 
   /* =========================================================================
@@ -97,4 +142,17 @@ annotate view ZARV_C_MARKET with
   @EndUserText.label: 'Change Time'
   @UI.fieldGroup: [{ qualifier: 'MarketChange', position: 20 }]
   Changetime;
+  /* =========================================================================
+   AGGREGATED TOTAL COLUMNS FROM ORDERS
+   ========================================================================= */
+
+  @UI.lineItem: [{ position: 50, label: 'Total Quantity' }]
+  TotalQuantity;
+
+  @UI.lineItem: [{ position: 60, label: 'Total Net Amount' }]
+  TotalNetAmount;
+
+  @UI.lineItem: [{ position: 70, label: 'Total Gross Amount' }]
+  TotalGrossAmount;
+
 }

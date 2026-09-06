@@ -4,36 +4,36 @@
 @Metadata.ignorePropagatedAnnotations: true
 define view entity ZARV_I_ORDER
   as select from zarv_d_order
-  association to parent ZARV_I_MARKET as _Market on $projection.MrktUuid = _Market.MrktUuid
-  association [0..1] to ZARV_I_PRODUCT as _Product on $projection.ProdUuid = _Product.ProdUuid
+  association        to parent ZARV_I_MARKET as _Market  on $projection.MrktUuid = _Market.MrktUuid
+  association [0..1] to ZARV_I_PRODUCT       as _Product on $projection.ProdUuid = _Product.ProdUuid
 {
-  key order_uuid         as OrderUuid,
-      prod_uuid          as ProdUuid,
-      mrkt_uuid          as MrktUuid,
-      orderid            as Orderid,
-      quantity           as Quantity,
-      delivery_date      as DeliveryDate,
-      calendar_year      as CalendarYear,
+  key order_uuid                                                                              as OrderUuid,
+      prod_uuid                                                                               as ProdUuid,
+      mrkt_uuid                                                                               as MrktUuid,
+      orderid                                                                                 as Orderid,
+      quantity                                                                                as Quantity,
+      delivery_date                                                                           as DeliveryDate,
+      calendar_year                                                                           as CalendarYear,
       @Semantics.amount.currencyCode: 'Currency'
-      netamount          as Netamount,
+      netamount                                                                               as Netamount,
       @Semantics.amount.currencyCode: 'Currency'
-      grossamount        as Grossamount,
-      currency           as Currency,
-      busspartner        as Busspartner,
-      busspartnercompany as Busspartnercompany,
-      busspartneremail   as Busspartneremail,
-      busspartnerphone   as Busspartnerphone,
-      
+      grossamount                                                                             as Grossamount,
+      currency                                                                                as Currency,
+      busspartner                                                                             as Busspartner,
+      busspartnercompany                                                                      as Busspartnercompany,
+      busspartneremail                                                                        as Busspartneremail,
+      busspartnerphone                                                                        as Busspartnerphone,
+
       @Semantics.user.createdBy: true
-      createdby          as Createdby,
+      createdby                                                                               as Createdby,
       @Semantics.systemDateTime.createdAt: true
-      creationtime       as Creationtime,
+      creationtime                                                                            as Creationtime,
       @Semantics.user.lastChangedBy: true
-      changedby          as Changedby,
+      changedby                                                                               as Changedby,
       @Semantics.systemDateTime.lastChangedAt: true
-      changetime         as Changetime,
-      cast( 'https://thumbs.dreamstime.com/b/upload-12922548.jpg?w=768' as abap.char( 255 ) ) as OrderImageUrl,  
-      
+      changetime                                                                              as Changetime,
+      cast( 'https://thumbs.dreamstime.com/b/upload-12922548.jpg?w=768' as abap.char( 255 ) ) as OrderImageUrl,
+
       _Market,
       _Product
 }

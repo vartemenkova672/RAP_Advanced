@@ -29,6 +29,17 @@ define view entity ZARV_C_MARKET
       Changedby,
       Changetime,
 
+      @Semantics.quantity.unitOfMeasure: 'QuantityUnit'
+      TotalQuantity,
+      QuantityUnit,
+
+      @Semantics.amount.currencyCode: 'OrderCurrency'
+      TotalNetAmount,
+
+      @Semantics.amount.currencyCode: 'OrderCurrency'
+      TotalGrossAmount,
+      OrderCurrency,
+
       /* Associations */
       _Product : redirected to parent ZARV_C_PRODUCT,
       _Order   : redirected to composition child ZARV_C_ORDER,

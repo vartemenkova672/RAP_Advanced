@@ -4,9 +4,10 @@
 @Metadata.ignorePropagatedAnnotations: true
 define view entity ZARV_I_MARKET
   as select from zarv_d_market
-  association        to parent ZARV_I_PRODUCT as _Product on $projection.ProdUuid = _Product.ProdUuid
+  association        to parent ZARV_I_PRODUCT as _Product  on $projection.ProdUuid = _Product.ProdUuid
   composition [0..*] of ZARV_I_ORDER          as _Order
-  association [1..1] to zarv_d_country        as _Country on $projection.Mrktid = _Country.mrktid
+  association [1..1] to zarv_d_country        as _Country  on $projection.Mrktid = _Country.mrktid
+  association [0..1] to ZARV_I_ORDER_SUM      as _OrderSum on $projection.MrktUuid = _OrderSum.MrktUuid
 {
   key mrkt_uuid         as MrktUuid,
       prod_uuid         as ProdUuid,
@@ -31,6 +32,14 @@ define view entity ZARV_I_MARKET
       changedby         as Changedby,
       @Semantics.systemDateTime.lastChangedAt: true
       changetime        as Changetime,
+      @Semantics.quantity.unitOfMeasure: 'QuantityUnit'
+      _OrderSum.TotalQuantity,
+      _OrderSum.QuantityUnit,
+       @Semantics.amount.currencyCode: 'OrderCurrency'
+      _OrderSum.TotalNetAmount,
+       @Semantics.amount.currencyCode: 'OrderCurrency'
+      _OrderSum.TotalGrossAmount,
+      _OrderSum.OrderCurrency,
 
       _Product,
       _Order,
