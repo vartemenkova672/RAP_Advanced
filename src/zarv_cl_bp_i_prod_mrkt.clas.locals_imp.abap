@@ -5,7 +5,6 @@ ENDCLASS.
 
 CLASS lhc_Market DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
-
     METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
       IMPORTING keys REQUEST requested_authorizations FOR Market RESULT result.
 
@@ -29,6 +28,8 @@ CLASS lhc_Market DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS checkDuplicates FOR VALIDATE ON SAVE
       IMPORTING keys FOR Market~checkDuplicates.
+    METHODS determineISO FOR DETERMINE ON MODIFY
+       keys FOR Market~determineISO.
 
 ENDCLASS.
 
@@ -52,11 +53,6 @@ CLASS lhc_Market IMPLEMENTATION.
         THEN if_abap_behv=>fc-o-disabled
         ELSE if_abap_behv=>fc-o-enabled
      )
-        %assoc-_Order = COND #(
-        WHEN ls_market-Status = 'YES' OR ls_market-Status = 'Yes'
-        THEN if_abap_behv=>fc-o-enabled
-        ELSE if_abap_behv=>fc-o-disabled
-      )
       ) ).
 
   ENDMETHOD.
@@ -272,6 +268,107 @@ CLASS lhc_Market IMPLEMENTATION.
           %element-mrktid = if_abap_behv=>mk-on
         ) TO reported-market.
       ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD determineISO.
+    " 1. Read market data from the transactional buffer (Draft instance)
+    READ ENTITIES OF zarv_i_product IN LOCAL MODE
+      ENTITY Market
+        FIELDS ( Mrktid Isocode ) WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_markets).
+
+    LOOP AT lt_markets ASSIGNING FIELD-SYMBOL(<ls_market>).
+      " Check if the trigger field is populated by the user
+      IF <ls_market>-Mrktid IS INITIAL.
+        CONTINUE.
+      ENDIF.
+
+      TRY.
+          " 1. Create a raw HTTP destination and client (Bypasses SOAP proxy framework database issues)
+          DATA(lo_http_destination) = cl_http_destination_provider=>create_by_url(
+            i_url = 'http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso'
+          ).
+
+          DATA(lo_http_client) = cl_web_http_client_manager=>create_by_http_destination(
+            i_destination = lo_http_destination
+          ).
+
+          DATA(lo_request) = lo_http_client->get_http_request( ).
+
+          " 2. Set headers required for a standard SOAP 1.1 / 1.2 request
+          lo_request->set_header_field( i_name = 'Content-Type' i_value = 'text/xml; charset=utf-8' ).
+
+          " 2.5 Initialize country code variable (takes 'JP' immediately if length is 2)
+          DATA(lv_country_code) = COND string( WHEN strlen( <ls_market>-Mrktid ) = 2
+                                               THEN <ls_market>-Mrktid
+                                               ELSE '' ).
+
+          " 3. STEP 1: Only if full name is entered (length > 2), convert it to 2-letter ISO code
+          IF strlen( <ls_market>-Mrktid ) > 2.
+            DATA(lv_soap_conv_xml) =
+              `<?xml version="1.0" encoding="utf-8"?>` &&
+              `<soap:Envelope xmlns:xsi="http://www.` && `w3.org/2001/XMLSchema-instance" ` &&
+              `xmlns:xsd="http://www.` && `w3.org/2001/XMLSchema" ` &&
+              `xmlns:soap="http://schemas.` && `xmlsoap.org/soap/envelope/">` &&
+              `  <soap:Body>` &&
+              `    <CountryISOCode xmlns="http://www.` && `oorsprong.org/websamples.countryinfo">` &&
+              `      <sCountryName>` && <ls_market>-Mrktid && `</sCountryName>` &&
+              `    </CountryISOCode>` &&
+              `  </soap:Body>` &&
+              `</soap:Envelope>`.
+
+            lo_request->set_text( lv_soap_conv_xml ).
+            DATA(lo_response_conv) = lo_http_client->execute( if_web_http_client=>post ).
+            DATA(lv_xml_conv) = lo_response_conv->get_text( ).
+
+            FIND REGEX '<[^>]*:?CountryISOCodeResult>([^<]*)</[^>]*:?CountryISOCodeResult>'
+                 IN lv_xml_conv
+                 SUBMATCHES lv_country_code.
+          ENDIF.
+          " 4. STEP 2: Executed for BOTH scenarios ('JP' and 'Japan') using the resolved lv_country_code
+          IF lv_country_code IS NOT INITIAL AND lv_country_code <> 'No country found by that name'.
+
+            DATA(lv_soap_xml) =
+              `<?xml version="1.0" encoding="utf-8"?>` &&
+              `<soap:Envelope xmlns:xsi="http://www.` && `w3.org/2001/XMLSchema-instance" ` &&
+              `xmlns:xsd="http://www.` && `w3.org/2001/XMLSchema" ` &&
+              `xmlns:soap="http://schemas.` && `xmlsoap.org/soap/envelope/">` &&
+              `  <soap:Body>` &&
+              `    <CountryCurrency xmlns="http://www.` && `oorsprong.org/websamples.countryinfo">` &&
+              `      <sCountryISOCode>` && lv_country_code && `</sCountryISOCode>` &&
+              `    </CountryCurrency>` &&
+              `  </soap:Body>` &&
+              `</soap:Envelope>`.
+
+            lo_request->set_text( lv_soap_xml ).
+            DATA(lo_response) = lo_http_client->execute( if_web_http_client=>post ).
+            DATA(lv_response_xml) = lo_response->get_text( ).
+
+            " Parse the currency tag: <sISOCode>
+            FIND REGEX '<[^>]*:?sISOCode>([^<]*)</[^>]*:?sISOCode>'
+                 IN lv_response_xml
+                 SUBMATCHES DATA(lv_result_currency_iso).
+
+            " Update the RAP transactional buffer with the final currency code (e.g., 'JPY')
+            IF sy-subrc = 0 AND lv_result_currency_iso IS NOT INITIAL.
+              MODIFY ENTITIES OF zarv_i_product IN LOCAL MODE
+                ENTITY Market
+                  UPDATE FIELDS ( Isocode )
+                  WITH VALUE #( ( %tky    = <ls_market>-%tky
+                                  Isocode = lv_result_currency_iso ) )
+                REPORTED DATA(ls_reported).
+            ELSE.
+              " Optional: If country not found, you can clear the Isocode field or handle it
+              MODIFY ENTITIES OF zarv_i_product IN LOCAL MODE
+                ENTITY Market
+                  UPDATE FIELDS ( Isocode )
+                  WITH VALUE #( ( %tky    = <ls_market>-%tky
+                                  Isocode = '-' ) )
+                REPORTED DATA(ls_reported_err).
+            ENDIF.
+          ENDIF.
+      ENDTRY.
     ENDLOOP.
   ENDMETHOD.
 

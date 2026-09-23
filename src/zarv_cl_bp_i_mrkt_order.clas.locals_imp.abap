@@ -11,6 +11,10 @@ CLASS lcl_order DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS validate_delivery_date FOR VALIDATE ON SAVE
       IMPORTING keys FOR MarketOrder~validate_delivery_date.
+    METHODS determineBusinessPartner FOR DETERMINE ON MODIFY
+       keys FOR MarketOrder~determineBusinessPartner.
+    METHODS validate_business_partner FOR VALIDATE ON SAVE
+       keys FOR MarketOrder~validate_business_partner.
 ENDCLASS.
 
 CLASS lcl_order IMPLEMENTATION.
@@ -143,6 +147,99 @@ CLASS lcl_order IMPLEMENTATION.
           ) TO reported-marketorder.
         ENDIF.
 
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD determineBusinessPartner.
+    " 1. Read the selected business partner ID from changing order rows
+    READ ENTITIES OF zarv_i_product IN LOCAL MODE
+      ENTITY MarketOrder
+        FIELDS ( BussPartner ) WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_orders).
+
+    DELETE lt_orders WHERE BussPartner IS INITIAL.
+    IF lt_orders IS INITIAL. RETURN. ENDIF.
+
+    DATA lt_bp_data TYPE TABLE OF zarv_i_business_partner_c.
+
+    " 2. Directly call provider's interface method safely
+    TRY.
+        DATA(lo_provider) = NEW zarv_cl_bp_query_provider( ).
+
+        " Declare empty object reference variables compatible with older NetWeaver signatures
+        DATA lo_req TYPE REF TO if_rap_query_request.
+        DATA lo_res TYPE REF TO if_rap_query_response.
+
+        " Execute the real OData deep read call by triggering select method directly
+        lo_provider->if_rap_query_provider~select(
+          io_request  = lo_req
+          io_response = lo_res
+        ).
+      CATCH cx_root.
+        CLEAR lt_bp_data.
+    ENDTRY.
+
+    DATA lt_orders_update TYPE TABLE FOR UPDATE zarv_i_product\\MarketOrder.
+
+    " 3. Map and distribute data fields dynamically back to the orders buffer
+    LOOP AT lt_orders ASSIGNING FIELD-SYMBOL(<fs_order>).
+      READ TABLE lt_bp_data INTO DATA(ls_bp) WITH KEY BusinessPartner = <fs_order>-BussPartner.
+      IF sy-subrc = 0.
+        APPEND VALUE #(
+          %tky               = <fs_order>-%tky
+          BussPartnerCompany = ls_bp-CompanyName
+          BussPartnerEmail   = ls_bp-EmailAddress
+          BussPartnerPhone   = ls_bp-PhoneNumber
+        ) TO lt_orders_update.
+      ENDIF.
+    ENDLOOP.
+
+    " 4. Update draft elements to push values directly to Fiori UI
+    IF lt_orders_update IS NOT INITIAL.
+      MODIFY ENTITIES OF zarv_i_product IN LOCAL MODE
+        ENTITY MarketOrder
+          UPDATE FIELDS ( BussPartnerCompany BussPartnerEmail BussPartnerPhone )
+          WITH lt_orders_update
+        REPORTED DATA(lt_reported).
+
+      reported-marketorder = CORRESPONDING #( lt_reported-marketorder ).
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD validate_business_partner.
+    " Read the business partner ID from the application state using correct field name
+    READ ENTITIES OF zarv_i_product IN LOCAL MODE
+      ENTITY MarketOrder
+        FIELDS ( Busspartner )
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_orders).
+
+    LOOP AT lt_orders INTO DATA(ls_order).
+      " Check if the field is initial
+      IF ls_order-Busspartner IS INITIAL.
+        APPEND VALUE #( %tky = ls_order-%tky ) TO failed-marketorder.
+        APPEND VALUE #( %tky = ls_order-%tky
+                        %msg = new_message_with_text(
+                                 severity = if_abap_behv_message=>severity-error
+                                 text     = 'Business Partner ID cannot be empty.' )
+                        %element-busspartner = if_abap_behv=>mk-on
+                      ) TO reported-marketorder.
+        CONTINUE.
+      ENDIF.
+
+      " Call the custom global validation method directly without complex framework objects
+      DATA(lv_partner_exists) = zarv_cl_bp_query_provider=>validate_partner( ls_order-Busspartner ).
+
+      " If partner does not exist on remote SAP API Hub, trigger UI error
+      IF lv_partner_exists = abap_false.
+        APPEND VALUE #( %tky = ls_order-%tky ) TO failed-marketorder.
+        APPEND VALUE #( %tky = ls_order-%tky
+                        %msg = new_message_with_text(
+                                 severity = if_abap_behv_message=>severity-error
+                                 text     = |Business Partner { ls_order-Busspartner } does not exist in SAP Hub| )
+                        %element-busspartner = if_abap_behv=>mk-on
+                      ) TO reported-marketorder.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.

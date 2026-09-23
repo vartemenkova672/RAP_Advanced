@@ -45,6 +45,9 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
     DELETE FROM zarv_d_pr_group.
     DELETE FROM zarv_d_phase.
     DELETE FROM zarv_d_uom.
+    DELETE FROM zarv_d_market_d.
+    DELETE FROM zarv_d_order_d.
+    DELETE FROM zarv_d_prod_d.
 
     out->write( |Tables cleaned.| ).
 

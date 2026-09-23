@@ -19,6 +19,7 @@ define view entity ZARV_I_ORDER
       @Semantics.amount.currencyCode: 'Currency'
       grossamount                                                                             as Grossamount,
       currency                                                                                as Currency,
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'ZARV_I_BUSINESS_PARTNER_C', element: 'BusinessPartner' } }]
       busspartner                                                                             as Busspartner,
       busspartnercompany                                                                      as Busspartnercompany,
       busspartneremail                                                                        as Busspartneremail,

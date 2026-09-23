@@ -14,6 +14,7 @@ define view entity ZARV_C_MARKET
       @ObjectModel.text.element: ['CountryName']
       @Search.defaultSearchElement: true
       Mrktid,
+      Isocode,
       Status,
       Startdate,
       Enddate,

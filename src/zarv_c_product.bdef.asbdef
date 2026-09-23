@@ -1,40 +1,55 @@
 projection;
 strict ( 2 );
+use draft;
 
 define behavior for ZARV_C_PRODUCT alias Product
 {
+
+  use association _Market { create; }
+
   use create;
   use update;
   use delete;
 
-  use association _Market { create; }
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Resume;
+  use action Prepare;
 
   field ( readonly ) Phaseid;
   use action make_copy;
   use action move_to_next_phase;
-
 }
 
 define behavior for ZARV_C_MARKET alias Market
 {
+
+  use association _Product;
+  use association _Order { create; }
+
   use update;
   use delete;
 
+  side effects
+  {
+    field Mrktid affects field Isocode;
+  }
+
   field ( readonly ) Status;
 
-  use association _Product;
-  use association _Order{ create; }
   use action confirmMarketByProduct;
 }
 
 define behavior for ZARV_C_ORDER alias _tOrder
 {
 
+  use association _Market;
+  use association _Product;
   use update;
   use delete;
 
   field ( readonly ) Orderid, Currency, Netamount, Grossamount, CalendarYear;
 
-  use association _Market;
-  use association _Product;
+
 }

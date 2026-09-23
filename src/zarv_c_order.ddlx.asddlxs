@@ -51,7 +51,21 @@ annotate view ZARV_C_ORDER with
 
     { id: 'idAdminData',       type: #COLLECTION,           label: 'Admin Data',          position: 20 },
     { id: 'idCreate',          type: #FIELDGROUP_REFERENCE, label: 'Create Info',         position: 10, parentId: 'idAdminData',   targetQualifier: 'CreateInfo' },
-    { id: 'idChange',          type: #FIELDGROUP_REFERENCE, label: 'Change Info',         position: 20, parentId: 'idAdminData',   targetQualifier: 'ChangeInfo' }
+    { id: 'idChange',          type: #FIELDGROUP_REFERENCE, label: 'Change Info',         position: 20, parentId: 'idAdminData',   targetQualifier: 'ChangeInfo' },
+
+     { id:       'BusinessPartnerTab',
+    purpose:  #STANDARD,
+    type:     #COLLECTION,
+    label:    'Business Partner',
+    position: 20 },
+
+    { id:       'BPGroup',
+    purpose:  #STANDARD,
+    type:     #FIELDGROUP_REFERENCE,
+    parentId: 'BusinessPartnerTab',
+    label:    'Business Partner Information',
+    targetQualifier: 'BPData',
+    position: 10 }
   ]
      /* =========================================================================
         ELEMENTS DECLARATION & UI PLACEMENT
@@ -94,14 +108,21 @@ annotate view ZARV_C_ORDER with
          fieldGroup: [{ qualifier: 'OrderGroup', position: 20, label: 'Year:' }] }
   CalendarYear;
 
-  @UI.lineItem: [{ position: 70, label: 'Business Partner' }]
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'ZARV_I_BUSINESS_PARTNER_C', element: 'BusinessPartner' } }]
+  @UI.lineItem: [{ position: 50, importance: #HIGH }]
+  @UI.fieldGroup: [{ qualifier: 'BPData', position: 10 }]
+  Busspartner;
+
+  @UI.lineItem: [{ position: 60 }]
+  @UI.fieldGroup: [{ qualifier: 'BPData', position: 20 }]
   Busspartnercompany;
 
-  @UI.hidden: true
-  Busspartner;
-  @UI.hidden: true
+  @UI.lineItem: [{ position: 70 }]
+  @UI.fieldGroup: [{ qualifier: 'BPData', position: 30 }]
   Busspartneremail;
-  @UI.hidden: true
+
+  @UI.lineItem: [{ position: 80 }]
+  @UI.fieldGroup: [{ qualifier: 'BPData', position: 40 }]
   Busspartnerphone;
 
   @UI.fieldGroup: [{ qualifier: 'CreateInfo', position: 10, label: 'Created By:' }]

@@ -103,9 +103,15 @@ annotate view ZARV_C_MARKET with
   }
   Mrktid;
 
+  @UI: {
+    lineItem:       [{ position: 20 }],
+    fieldGroup:     [{ qualifier: 'MarketBasic', position: 20 }]
+  }
+  Isocode;
+
   @EndUserText.label: 'Confirmed?'
   @UI: {
-    lineItem:       [{ position: 20, criticality: 'MarketCriticality', criticalityRepresentation: #WITH_ICON }],
+    lineItem:       [{ position: 30, criticality: 'MarketCriticality', criticalityRepresentation: #WITH_ICON }],
     fieldGroup:     [{ qualifier: 'MarketBasic', position: 20, criticality: 'MarketCriticality', criticalityRepresentation: #WITH_ICON }],
     selectionField: [{ position: 20 }]
   }
@@ -113,7 +119,7 @@ annotate view ZARV_C_MARKET with
 
   @EndUserText.label: 'Start Date'
   @UI: {
-    lineItem:       [{ position: 30 }],
+    lineItem:       [{ position: 40 }],
     fieldGroup:     [{ qualifier: 'MarketBasic', position: 30 }],
     dataPoint:      { qualifier: 'dpHeaderStart', title: 'Start Date' }
   }
@@ -121,7 +127,7 @@ annotate view ZARV_C_MARKET with
 
   @EndUserText.label: 'End Date'
   @UI: {
-    lineItem:       [{ position: 40 }],
+    lineItem:       [{ position: 50 }],
     fieldGroup:     [{ qualifier: 'MarketBasic', position: 40 }],
     dataPoint:      { qualifier: 'dpHeaderEnd', title: 'End Date' }
   }

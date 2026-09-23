@@ -16,7 +16,17 @@ define view entity ZARV_C_ORDER
       @Semantics.amount.currencyCode: 'Currency'
       Grossamount,
       Currency,
+      
+      @Consumption.valueHelpDefinition: [{ 
+        entity: { name: 'ZARV_I_BUSINESS_PARTNER_C', element: 'BusinessPartner' },
+        additionalBinding: [
+          { localElement: 'Busspartnercompany', element: 'CompanyName' },
+          { localElement: 'Busspartneremail',   element: 'EmailAddress' },
+          { localElement: 'Busspartnerphone',   element: 'PhoneNumber' }
+        ] 
+      }]
       Busspartner,
+      
       Busspartnercompany,
       Busspartneremail,
       Busspartnerphone,
@@ -25,7 +35,6 @@ define view entity ZARV_C_ORDER
       Changedby,
       Changetime,
       OrderImageUrl,
-
 
       /* Associations */
       _Market  : redirected to parent ZARV_C_MARKET,
