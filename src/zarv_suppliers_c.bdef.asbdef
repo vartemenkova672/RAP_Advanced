@@ -1,0 +1,19 @@
+unmanaged implementation in class zbp_arv_suppliers_c unique;
+strict ( 2 );
+
+define behavior for ZARV_SUPPLIERS_C alias Suppliers
+// Added mandatory master flags to satisfy strict mode requirements
+lock master
+authorization master ( global )
+{
+  // Editable and mandatory field as per requirements
+  field ( mandatory ) discount_pct;
+
+  // All other remote fields must be read-only
+  field ( readonly ) supplier_id, company_name, contact_name, contact_title,
+                     country, city, address, phone, fax, region, postal_code,
+                     home_page, lastchangedat;
+
+  // Only UPDATE operation is supported
+  update;
+}

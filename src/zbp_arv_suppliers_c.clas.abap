@@ -1,0 +1,5 @@
+CLASS zbp_arv_suppliers_c DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF zarv_suppliers_c.
+ENDCLASS.
+
+CLASS zbp_arv_suppliers_c IMPLEMENTATION.
+ENDCLASS.

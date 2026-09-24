@@ -1,0 +1,4 @@
+@EndUserText.label: 'Service Definition for Suppliers Extension'
+define service ZARV_SD_SUPPLIERS {
+  expose ZARV_SUPPLIERS_C as Suppliers;
+}
