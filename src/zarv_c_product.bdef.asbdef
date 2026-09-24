@@ -20,6 +20,7 @@ define behavior for ZARV_C_PRODUCT alias Product
   field ( readonly ) Phaseid;
   use action make_copy;
   use action move_to_next_phase;
+  use action GET_PGNAME_TRANSL;
 }
 
 define behavior for ZARV_C_MARKET alias Market

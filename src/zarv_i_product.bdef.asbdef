@@ -8,7 +8,7 @@ draft table zarv_d_prod_d
 lock master
 total etag Changetime
 authorization master ( instance )
-//with additional save
+
 {
   create ( authorization : global );
   update;
@@ -23,11 +23,12 @@ authorization master ( instance )
   association _Market { create; }
 
   field ( numbering : managed, readonly ) ProdUuid;
-  field ( readonly ) Changetime, Changedby, Creationtime, Createdby;
+  field ( readonly ) Changetime, Changedby, Creationtime, Createdby, PgnameTrans;
   field ( mandatory ) Prodid, Pgid, Price, Currency;
 
   determination calculateProdUUID on modify { create; }
   determination setFirstPhase on modify { create; }
+  determination SET_PGNAME_TRANSLATION on save { field Pgid, TransCode; }
 
   validation validatePG on save { create; update; field Pgid; }
   validation validateProdID on save { create; field Prodid; }
@@ -35,6 +36,8 @@ authorization master ( instance )
 
   action make_copy parameter ZARV_A_COPY_PARAM result [1] $self;
   action ( features : instance ) move_to_next_phase result [1] $self;
+  action GET_PGNAME_TRANSL result [1] $self;
+
 
   mapping for zarv_d_product
     {

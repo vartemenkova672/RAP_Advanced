@@ -45,6 +45,7 @@ define root view entity ZARV_C_PRODUCT
       Changedby,
       Changetime,
       PgnameTrans,
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'ZARV_I_PRODUCT_VH', element: 'TransCode' } }]
       TransCode,
       _ProductGroup.pgimageurl as ProductGroupImage,
 

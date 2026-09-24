@@ -68,11 +68,13 @@ annotate entity ZARV_C_PRODUCT with
   @UI.lineItem: [
     { position: 10  },
     { type: #FOR_ACTION, dataAction: 'make_copy', label: 'Copy Product' },
-    { type: #FOR_ACTION, dataAction: 'move_to_next_phase', label: 'Next Phase' }
+    { type: #FOR_ACTION, dataAction: 'move_to_next_phase', label: 'Next Phase' },
+    { type: #FOR_ACTION, dataAction: 'GET_PGNAME_TRANSL', label: 'Translate' }
   ]
   @UI.identification: [
     { type: #FOR_ACTION, dataAction: 'make_copy', label: 'Copy Product' },
-    { type: #FOR_ACTION, dataAction: 'move_to_next_phase', label: 'Next Phase' }
+    { type: #FOR_ACTION, dataAction: 'move_to_next_phase', label: 'Next Phase' },
+    { type: #FOR_ACTION, dataAction: 'GET_PGNAME_TRANSL', label: 'Translate' }
   ]
 
   @UI.selectionField: [ { position: 10 } ]
@@ -91,10 +93,20 @@ annotate entity ZARV_C_PRODUCT with
   Phaseid;
 
   @UI.lineItem: [{ position: 20 }]
-  @UI.selectionField: [ { position: 30 }]
+   @UI.selectionField: [ { position: 30 }]
   @EndUserText.label: 'Product Group'
   @UI.fieldGroup: [{ qualifier: 'Basic', position: 20 }]
   Pgid;
+
+  @UI.lineItem: [{ position: 30 }]
+  @EndUserText.label: 'Trans Lang'
+  @UI.fieldGroup: [{ qualifier: 'Basic', position: 30 }]
+  TransCode;
+  
+  @UI.lineItem: [{ position: 40 }]
+  @EndUserText.label: 'Product Group (trans)'
+  @UI.fieldGroup: [{ qualifier: 'Basic', position: 40 }]
+  PgnameTrans;
 
   // --- Size Dimensions ---
   @UI.lineItem: [{ position: 60 }]

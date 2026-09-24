@@ -104,6 +104,16 @@ CLASS lhc_Product DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS validateCurrency FOR VALIDATE ON SAVE
        keys FOR Product~validateCurrency.
+    METHODS get_pgname_transl FOR MODIFY
+       keys FOR ACTION Product~get_pgname_transl RESULT result.
+
+    METHODS set_pgname_translation FOR DETERMINE ON SAVE
+       keys FOR Product~set_pgname_translation.
+
+    METHODS call_google_translate
+      IMPORTING iv_text         TYPE string
+                iv_target_lang  TYPE string
+      RETURNING VALUE(rv_trans) TYPE string.
 
 ENDCLASS.
 
@@ -341,7 +351,7 @@ CLASS lhc_Product IMPLEMENTATION.
           CONTINUE.
       ENDCASE.
 
-        " 3. If validation failed, block transaction and report message to UI
+      " 3. If validation failed, block transaction and report message to UI
       IF lv_error_text IS NOT INITIAL.
         APPEND VALUE #( %tky = <ls_prod>-%tky ) TO failed-Product.
 
@@ -352,7 +362,7 @@ CLASS lhc_Product IMPLEMENTATION.
           %element-Phaseid = if_abap_behv=>mk-on
         ) TO reported-Product.
 
-      " Otherwise, collect for update
+        " Otherwise, collect for update
       ELSEIF ls_update_product-%tky IS NOT INITIAL.
         APPEND ls_update_product TO lt_update_products.
       ENDIF.
@@ -556,6 +566,112 @@ CLASS lhc_Product IMPLEMENTATION.
         ) TO reported-Product.
       ENDIF.
     ENDLOOP.
+  ENDMETHOD.
+
+  METHOD set_pgname_translation.
+    " 1. Read ProdUuid, Pgid, and TransCode for the instances being saved
+    READ ENTITIES OF zarv_i_product IN LOCAL MODE
+      ENTITY Product
+        FIELDS ( Pgid TransCode ) WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_products).
+
+    DATA lt_update TYPE TABLE FOR UPDATE zarv_i_product.
+
+    LOOP AT lt_products ASSIGNING FIELD-SYMBOL(<ls_product>).
+      IF <ls_product>-Pgid IS NOT INITIAL AND <ls_product>-TransCode IS NOT INITIAL.
+
+        " 2. Read the source English text directly from the database table
+        DATA lv_pgname TYPE string.
+        SELECT SINGLE pgname
+          FROM zarv_d_pr_group
+          WHERE pgid = @<ls_product>-Pgid
+          INTO @lv_pgname.
+
+        IF sy-subrc = 0 AND lv_pgname IS NOT INITIAL.
+          " Call the integration with Google Translate API
+          DATA(lv_translation) = me->call_google_translate(
+                                   iv_text        = lv_pgname
+                                   iv_target_lang = CONV string( <ls_product>-TransCode ) ).
+
+          " Prepare the update structure for the translation field
+          APPEND VALUE #( %tky        = <ls_product>-%tky
+                          PgnameTrans = lv_translation ) TO lt_update.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+
+    " 3. Write the translation back to the transactional buffer before saving to DB
+    IF lt_update IS NOT INITIAL.
+      MODIFY ENTITIES OF zarv_i_product IN LOCAL MODE
+        ENTITY Product
+          UPDATE FIELDS ( PgnameTrans ) WITH lt_update.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD get_pgname_transl.
+    " 1. Read data of the currently selected instance
+    READ ENTITIES OF zarv_i_product IN LOCAL MODE
+      ENTITY Product
+        FIELDS ( Pgid ) WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_products).
+
+    CHECK lt_products IS NOT INITIAL.
+    " Read the first row of the table using index syntax to get a proper structure
+    DATA(ls_product) = lt_products[ 1 ].
+
+    " 2. Read the source English text directly from the database table
+    DATA lv_source_text TYPE string.
+    SELECT SINGLE pgname
+      FROM zarv_d_pr_group
+      WHERE pgid = @ls_product-Pgid
+      INTO @lv_source_text.
+
+    CHECK sy-subrc = 0 AND lv_source_text IS NOT INITIAL.
+
+    " 3. Target languages list strictly according to the task requirements (RU, DE, EN, ES, FR)
+    DATA(lt_languages) = VALUE string_table( ( `RU` ) ( `DE` ) ( `EN` ) ( `ES` ) ( `FR` ) ).
+
+    LOOP AT lt_languages INTO DATA(lv_lang).
+      " Request the translation from Google API
+      DATA(lv_trans) = me->call_google_translate( iv_text = lv_source_text iv_target_lang = lv_lang ).
+
+      " Format the message string exactly as shown in the layout mockup
+      DATA(lv_msg) = |Translation on { lv_lang } is '{ lv_trans }'|.
+
+      " 4. Pass information messages to display them in the Fiori dialog
+      APPEND VALUE #( %tky = ls_product-%tky
+                      %msg = new_message_with_text(
+                               severity = if_abap_behv_message=>severity-information
+                               text     = lv_msg )
+                    ) TO reported-product.
+    ENDLOOP.
+
+    " Return the instance back to the framework
+    APPEND VALUE #( %tky = ls_product-%tky %param = ls_product ) TO result.
+  ENDMETHOD.
+
+  METHOD call_google_translate.
+    TRY.
+        " Create HTTP client directly to the Google Translate endpoint verified in ReqBin
+        DATA(lo_http_client) = cl_web_http_client_manager=>create_by_http_destination(
+          cl_http_destination_provider=>create_by_url( 'https://translate.googleapis.com/translate_a/single') ).
+
+        DATA(lo_request) = lo_http_client->get_http_request( ).
+
+        " Pass all query parameters as a single string according to your system syntax
+        lo_request->set_query( |client=gtx&dt=t&sl=en&tl={ to_lower( iv_target_lang ) }&q={ iv_text }| ).
+
+        DATA(lo_response) = lo_http_client->execute( if_web_http_client=>get ).
+        DATA(lo_json) = lo_response->get_text( ).
+
+        " Parse the simple Google array response by looking for quotation marks
+        IF lo_json CS '"'.
+          SPLIT lo_json AT '"' INTO DATA(lv_dummy1) rv_trans DATA(lv_dummy2).
+        ENDIF.
+
+      CATCH cx_root.
+        rv_trans = 'Error'.
+    ENDTRY.
   ENDMETHOD.
 
 ENDCLASS.
