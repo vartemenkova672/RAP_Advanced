@@ -79,7 +79,6 @@ CLASS lhc_Market IMPLEMENTATION.
     lcl_context_buffer=>gv_skip_validations = abap_false.
   ENDMETHOD.
 
-
   METHOD setInitialStatus.
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY Market
@@ -97,9 +96,8 @@ CLASS lhc_Market IMPLEMENTATION.
       REPORTED DATA(lt_reported).
   ENDMETHOD.
 
-  METHOD validateStartDate.
+METHOD validateStartDate.
     IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
-    " VALIDATE_START_DATE: STARTDATE must be >= today's date
     DATA(lv_today) = cl_abap_context_info=>get_system_date( ).
 
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
@@ -112,13 +110,11 @@ CLASS lhc_Market IMPLEMENTATION.
         APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
 
         APPEND VALUE #(
-          %tky        = ls_market-%tky
-          %state_area = 'VALIDATE_START'
-          %msg        = new_message_with_text(
-                          severity = if_abap_behv_message=>severity-error
-                          text     = 'Start Date must be greater than today'
-                        )
-          %element-startdate = if_abap_behv=>mk-on
+          %tky = ls_market-%tky
+          %msg = new_message_with_text(
+                   severity = if_abap_behv_message=>severity-error
+                   text     = 'Start Date must be greater than today'
+                 )
         ) TO reported-market.
       ENDIF.
     ENDLOOP.
@@ -126,30 +122,27 @@ CLASS lhc_Market IMPLEMENTATION.
 
   METHOD validateMarket.
     IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
-    " VALIDATE_MARKET: MRKTID value must be present and exist in SAP standard CDS view (I_Country)
+
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY Market
-        FIELDS ( Mrktid ) WITH CORRESPONDING #( keys )
+        FIELDS ( Mrktid ProdUuid ) WITH CORRESPONDING #( keys )
       RESULT DATA(lt_markets).
 
     LOOP AT lt_markets INTO DATA(ls_market).
-      " 1. Strict check for empty/blank values
       IF ls_market-Mrktid IS INITIAL OR condense( ls_market-Mrktid ) = ''.
         APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
 
         APPEND VALUE #(
-          %tky        = ls_market-%tky
-          %state_area = 'VALIDATE_MARKET_EMPTY'
-          %msg        = new_message_with_text(
-                          severity = if_abap_behv_message=>severity-error
-                          text     = 'Market ID is required and cannot be blank.'
-                        )
-          %element-mrktid = if_abap_behv=>mk-on
-        ) TO reported-market.
+          ProdUuid  = ls_market-ProdUuid
+          %is_draft = ls_market-%is_draft
+          %msg      = new_message_with_text(
+                        severity = if_abap_behv_message=>severity-error
+                        text     = 'Market ID is required and cannot be blank.'
+                      )
+        ) TO reported-product.
       ENDIF.
     ENDLOOP.
 
-    " 2. Existence check for non-empty values
     IF lt_markets IS NOT INITIAL.
       DATA lt_countries_to_check TYPE STANDARD TABLE OF I_Country WITH DEFAULT KEY.
 
@@ -175,23 +168,20 @@ CLASS lhc_Market IMPLEMENTATION.
           APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
 
           APPEND VALUE #(
-            %tky        = ls_market-%tky
-            %state_area = 'VALIDATE_MARKET'
-            %msg        = new_message_with_text(
-                            severity = if_abap_behv_message=>severity-error
-                            text     = 'Market doesn''t exist'
-                          )
-            %element-mrktid = if_abap_behv=>mk-on
-          ) TO reported-market.
+            ProdUuid  = ls_market-ProdUuid
+            %is_draft = ls_market-%is_draft
+            %msg      = new_message_with_text(
+                          severity = if_abap_behv_message=>severity-error
+                          text     = 'Market doesn''t exist'
+                        )
+          ) TO reported-product.
         ENDIF.
       ENDLOOP.
     ENDIF.
   ENDMETHOD.
 
-
-  METHOD validateDates.
+ METHOD validateDates.
     IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
-    " VALIDATE_END_DATE: if present, must be > today and STARTDATE
     DATA(lv_today) = cl_abap_context_info=>get_system_date( ).
 
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
@@ -201,41 +191,35 @@ CLASS lhc_Market IMPLEMENTATION.
 
     LOOP AT lt_markets INTO DATA(ls_market).
       IF ls_market-Enddate IS NOT INITIAL.
-        " Check against today
         IF ls_market-Enddate <= lv_today.
           APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
           APPEND VALUE #(
-            %tky        = ls_market-%tky
-            %state_area = 'VALIDATE_END_TODAY'
-            %msg        = new_message_with_text(
-                            severity = if_abap_behv_message=>severity-error
-                            text     = 'End Date must greater than today'
-                          )
-            %element-enddate = if_abap_behv=>mk-on
+            %tky = ls_market-%tky
+            %msg = new_message_with_text(
+                     severity = if_abap_behv_message=>severity-error
+                     text     = 'End Date must greater than today'
+                   )
           ) TO reported-market.
           CONTINUE.
         ENDIF.
 
-        " Check against Startdate
         IF ls_market-Enddate < ls_market-Startdate.
           APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
           APPEND VALUE #(
-            %tky        = ls_market-%tky
-            %state_area = 'VALIDATE_END_START'
-            %msg        = new_message_with_text(
-                            severity = if_abap_behv_message=>severity-error
-                            text     = 'End Date must be greater than Start Date'
-                          )
-            %element-enddate = if_abap_behv=>mk-on
+            %tky = ls_market-%tky
+            %msg = new_message_with_text(
+                     severity = if_abap_behv_message=>severity-error
+                     text     = 'End Date must be greater than Start Date'
+                   )
           ) TO reported-market.
         ENDIF.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
 
-  METHOD checkDuplicates.
+ METHOD checkDuplicates.
     IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
-    " CHECK_DUPLICATES: product cannot have markets with the same MRKTID
+
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY Market
         FIELDS ( ProdUuid Mrktid ) WITH CORRESPONDING #( keys )
@@ -259,14 +243,13 @@ CLASS lhc_Market IMPLEMENTATION.
         APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
 
         APPEND VALUE #(
-          %tky        = ls_market-%tky
-          %state_area = 'CHECK_DUPLICATES'
-          %msg        = new_message_with_text(
+          ProdUuid  = ls_market-ProdUuid
+          %is_draft = ls_market-%is_draft
+          %msg      = new_message_with_text(
                           severity = if_abap_behv_message=>severity-error
                           text     = 'This market is already assigned to the product'
                         )
-          %element-mrktid = if_abap_behv=>mk-on
-        ) TO reported-market.
+        ) TO reported-product.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.

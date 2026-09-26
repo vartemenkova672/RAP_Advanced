@@ -4,7 +4,6 @@ use draft;
 
 define behavior for ZARV_C_PRODUCT alias Product
 {
-
   use association _Market { create; }
 
   use create;

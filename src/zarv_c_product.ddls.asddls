@@ -16,12 +16,12 @@ define root view entity ZARV_C_PRODUCT
       @Consumption.valueHelpDefinition: [{ entity: { name: 'ZARV_I_PG', element: 'pgid' } }]
       @UI.textArrangement: #TEXT_ONLY
       Pgid,
-      _ProductGroup.pgname as ProductGroupName,
+      _ProductGroup.pgname     as ProductGroupName,
 
       @ObjectModel.text.element: ['PhaseName']
       @Consumption.valueHelpDefinition: [{ entity: { name: 'ZARV_I_PHASE', element: 'phaseid' } }]
       Phaseid,
-      _Phase.phase         as PhaseName,
+      _Phase.phase             as PhaseName,
 
       PhaseCriticality,
 

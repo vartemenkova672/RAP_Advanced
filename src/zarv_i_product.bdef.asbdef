@@ -15,16 +15,39 @@ authorization master ( instance )
   delete;
 
   draft action Edit;
-  draft action Activate optimized;
+  draft action Activate;
   draft action Discard;
   draft action Resume;
-  draft determine action Prepare;
+  draft determine action Prepare
+  {
 
+    validation Market~validateMarket;
+    validation Market~validateStartDate;
+    validation Market~validateDates;
+    validation Market~checkDuplicates;
+
+    validation MarketOrder~VALIDATE_BUSINESS_PARTNER;
+    validation MarketOrder~validate_delivery_date;
+
+    validation validatePG;
+    validation validateProdID;
+    validation validateCurrency;
+  }
   association _Market { create; }
 
   field ( numbering : managed, readonly ) ProdUuid;
   field ( readonly ) Changetime, Changedby, Creationtime, Createdby, PgnameTrans;
-  field ( mandatory ) Prodid, Pgid, Price, Currency;
+
+  field ( features : instance )
+  Prodid,
+  Pgid,
+  Height,
+  Depth,
+  Width,
+  Sizeuom,
+  Price,
+  Currency,
+  Taxrate;
 
   determination calculateProdUUID on modify { create; }
   determination setFirstPhase on modify { create; }

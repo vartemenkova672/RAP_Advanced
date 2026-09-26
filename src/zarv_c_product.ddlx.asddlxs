@@ -93,7 +93,7 @@ annotate entity ZARV_C_PRODUCT with
   Phaseid;
 
   @UI.lineItem: [{ position: 20 }]
-   @UI.selectionField: [ { position: 30 }]
+  @UI.selectionField: [ { position: 30 }]
   @EndUserText.label: 'Product Group'
   @UI.fieldGroup: [{ qualifier: 'Basic', position: 20 }]
   Pgid;
