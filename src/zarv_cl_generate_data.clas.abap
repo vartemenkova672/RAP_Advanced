@@ -61,7 +61,8 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
       ( mandt = sy-mandt phaseid = 'PLAN' phase = 'Planning' )
       ( mandt = sy-mandt phaseid = 'DEV'  phase = 'Development' )
       ( mandt = sy-mandt phaseid = 'PROD' phase = 'Production' )
-      ( mandt = sy-mandt phaseid = 'OUT'  phase = 'Out of Phase' )
+      ( mandt = sy-mandt phaseid = 'TEST' phase = 'Testing' )
+      ( mandt = sy-mandt phaseid = 'DISC' phase = 'Discontinued' )
     ).
     INSERT zarv_d_phase FROM TABLE @lt_phase.
 
@@ -171,7 +172,7 @@ CLASS zarv_cl_generate_data IMPLEMENTATION.
         createdby = sy-uname creationtime = lv_ts changedby = sy-uname changetime = lv_ts )
 
          ( mandt = sy-mandt prod_uuid = lt_prod_uuid[ 6 ]
-        prodid = 'P-0006' pgid = lv_pgid_fridge phaseid = 'OUT'
+        prodid = 'P-0006' pgid = lv_pgid_fridge phaseid = 'PLAN'
         height = '1.900' depth = '0.800' width = '0.800' sizeuom = 'M'
         price = '1989.99' currency = 'EUR' taxrate = '20.00'
         pgname_trans = 'Fridge' trans_code = 'EN'

@@ -4,10 +4,6 @@ CLASS lcl_custom_text_msg DEFINITION INHERITING FROM cx_no_check.
     INTERFACES if_t100_message.
 
     DATA mv_text TYPE string.
-    DATA mv_v1 TYPE symsgv.
-    DATA mv_v2 TYPE symsgv.
-    DATA mv_v3 TYPE symsgv.
-    DATA mv_v4 TYPE symsgv.
 
     METHODS constructor
       IMPORTING
@@ -23,35 +19,49 @@ CLASS lcl_custom_text_msg IMPLEMENTATION.
     mv_text = iv_text.
     if_abap_behv_message~m_severity = is_severity.
 
+    DATA(lo_msg) = CAST if_abap_behv_message( me ).
+
+    ASSIGN lo_msg->('V1') TO FIELD-SYMBOL(<lv_v1>).
+    IF sy-subrc <> 0.
+      ASSIGN lo_msg->('M_V1') TO <lv_v1>.
+    ENDIF.
+    IF sy-subrc <> 0.
+      ASSIGN lo_msg->('MV_V1') TO <lv_v1>.
+    ENDIF.
+
+    ASSIGN lo_msg->('V2') TO FIELD-SYMBOL(<lv_v2>).
+    IF sy-subrc <> 0.
+      ASSIGN lo_msg->('M_V2') TO <lv_v2>.
+    ENDIF.
+    IF sy-subrc <> 0.
+      ASSIGN lo_msg->('MV_V2') TO <lv_v2>.
+    ENDIF.
+
     if_t100_message~t100key = VALUE #(
       msgid = '00'
       msgno = '001'
-      attr1 = 'MV_V1'
-      attr2 = 'MV_V2'
-      attr3 = 'MV_V3'
-      attr4 = 'MV_V4'
+      attr1 = COND #( WHEN <lv_v1> IS ASSIGNED THEN 'IF_ABAP_BEHV_MESSAGE~V1' )
+      attr2 = COND #( WHEN <lv_v2> IS ASSIGNED THEN 'IF_ABAP_BEHV_MESSAGE~V2' )
     ).
+
+    IF if_t100_message~t100key-attr1 IS INITIAL.
+      if_t100_message~t100key-attr1 = 'IF_ABAP_BEHV_MESSAGE~M_V1'.
+      if_t100_message~t100key-attr2 = 'IF_ABAP_BEHV_MESSAGE~M_V2'.
+    ENDIF.
 
     DATA(lv_len) = numofchar( iv_text ).
 
     IF lv_len <= 50.
-      mv_v1 = substring( val = iv_text off = 0 len = lv_len ).
-    ELSEIF lv_len <= 100.
-      mv_v1 = substring( val = iv_text off = 0 len = 50 ).
-      mv_v2 = substring( val = iv_text off = 50 len = lv_len - 50 ).
-    ELSEIF lv_len <= 150.
-      mv_v1 = substring( val = iv_text off = 0 len = 50 ).
-      mv_v2 = substring( val = iv_text off = 50 len = 50 ).
-      mv_v3 = substring( val = iv_text off = 100 len = lv_len - 100 ).
-    ELSE.
-      mv_v1 = substring( val = iv_text off = 0 len = 50 ).
-      mv_v2 = substring( val = iv_text off = 50 len = 50 ).
-      mv_v3 = substring( val = iv_text off = 100 len = 50 ).
-      DATA(lv_rem_len) = lv_len - 150.
-      IF lv_rem_len > 50.
-        lv_rem_len = 50.
+      IF <lv_v1> IS ASSIGNED.
+        <lv_v1> = substring( val = iv_text off = 0 len = lv_len ).
       ENDIF.
-      mv_v4 = substring( val = iv_text off = 150 len = lv_rem_len ).
+    ELSE.
+      IF <lv_v1> IS ASSIGNED.
+        <lv_v1> = substring( val = iv_text off = 0 len = 50 ).
+      ENDIF.
+      IF <lv_v2> IS ASSIGNED.
+        <lv_v2> = substring( val = iv_text off = 50 len = lv_len - 50 ).
+      ENDIF.
     ENDIF.
   ENDMETHOD.
 
@@ -360,7 +370,7 @@ CLASS lhc_Product IMPLEMENTATION.
           " --- Rule 2: Move from DEV to PROD ---
           " Check: At least one market of the product must be confirmed.
           " (Change 'X' or 'CONFIRMED' depending on what value your status field stores)
-          IF line_exists( lt_prod_markets[ Status = 'X' ] ) OR line_exists( lt_prod_markets[ Status = 'YES' ] ).
+          IF line_exists( lt_prod_markets[ Status = 'X' ] ) OR line_exists( lt_prod_markets[ Status = 'CONFIRMED' ] ).
             ls_update_product-%tky    = <ls_prod>-%tky.
             ls_update_product-Phaseid = 'PROD'.
           ELSE.
@@ -502,64 +512,108 @@ CLASS lhc_Product IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
-  METHOD validatePG.
+  METHOD validatepg.
+    "Read PGID from current instances
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
-      ENTITY Product
-        FIELDS ( Pgid ) WITH CORRESPONDING #( keys )
-      RESULT DATA(lt_products).
+    ENTITY Product
+    FIELDS ( Pgid )
+    WITH VALUE #( FOR key IN keys ( %tky = key-%tky ) )
+    RESULT DATA(lt_prod).
 
-    LOOP AT lt_products INTO DATA(ls_product).
-      SELECT SINGLE pgid FROM zarv_i_pg
-        WHERE pgid = @ls_product-Pgid
-        INTO @DATA(lv_valid_pg).
+    IF lt_prod IS INITIAL.
+      RETURN.
+    ENDIF.
 
-      IF sy-subrc <> 0 OR ls_product-Pgid IS INITIAL.
-        APPEND VALUE #( %tky = ls_product-%tky ) TO failed-product.
+    "Collect unique PGIDs
+    DATA lt_pgid TYPE SORTED TABLE OF sysuuid_x16 WITH UNIQUE KEY table_line.
+    lt_pgid = VALUE #( FOR p IN lt_prod WHERE ( Pgid IS NOT INITIAL ) ( p-Pgid ) ).
 
+    "Read existing product groups
+    SELECT pgid
+    FROM zarv_d_pr_group
+    FOR ALL ENTRIES IN @lt_pgid
+    WHERE pgid = @lt_pgid-table_line
+    INTO TABLE @DATA(lt_exist).
+    SORT lt_exist BY pgid.
+
+    LOOP AT lt_prod ASSIGNING FIELD-SYMBOL(<ls_prod>).
+      IF <ls_prod>-Pgid IS INITIAL.
+        CONTINUE.
+      ENDIF.
+
+      READ TABLE lt_exist TRANSPORTING NO FIELDS WITH KEY pgid = <ls_prod>-Pgid.
+      IF sy-subrc <> 0.
+        "Block save for this instance
+        APPEND VALUE #( %tky = <ls_prod>-%tky ) TO failed-Product.
+
+        "Return message to UI
         APPEND VALUE #(
-          %tky        = ls_product-%tky
-          %msg        = NEW lcl_custom_text_msg( iv_text = 'Product Group is incorrect.' )
-          %element-pgid = if_abap_behv=>mk-on
-        ) TO reported-product.
+          %tky = <ls_prod>-%tky
+          %msg = new_message(
+                   id       = '00'
+                   number   = '001'
+                   severity = if_abap_behv_message=>severity-error
+                   v1       = |Unknown Product Group (PGID): { <ls_prod>-Pgid }| )
+          %element-Pgid = if_abap_behv=>mk-on
+        ) TO reported-Product.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
 
-
-  METHOD validateProdID.
+  METHOD validateprodid.
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY Product
-        FIELDS ( Prodid ) WITH CORRESPONDING #( keys )
-      RESULT DATA(lt_products).
+      FIELDS ( Prodid ProdUuid )
+      WITH VALUE #( FOR key IN keys ( %tky = key-%tky ) )
+      RESULT DATA(lt_prod).
 
-    LOOP AT lt_products INTO DATA(ls_product).
-      IF ls_product-Prodid IS INITIAL.
-        APPEND VALUE #( %tky = ls_product-%tky ) TO failed-product.
+    LOOP AT lt_prod ASSIGNING FIELD-SYMBOL(<ls_prod>).
+      IF <ls_prod>-Prodid IS INITIAL.
+        CONTINUE.
+      ENDIF.
+
+      SELECT SINGLE prod_uuid
+        FROM zarv_d_product
+        WHERE prodid = @<ls_prod>-Prodid
+          AND prod_uuid <> @<ls_prod>-ProdUuid
+        INTO @DATA(lv_other).
+
+      IF sy-subrc = 0.
+        APPEND VALUE #( %tky = <ls_prod>-%tky ) TO failed-Product.
 
         APPEND VALUE #(
-          %tky          = ls_product-%tky
-          %msg          = NEW lcl_custom_text_msg( iv_text = 'Product ID is required.' )
-          %element-prodid = if_abap_behv=>mk-on
-        ) TO reported-product.
+          %tky = <ls_prod>-%tky
+          %msg = new_message(
+                   id       = '00'
+                   number   = '001'
+                   severity = if_abap_behv_message=>severity-error
+                   v1       = |Duplicate Product ID: { <ls_prod>-Prodid }| )
+          %element-Prodid = if_abap_behv=>mk-on
+        ) TO reported-Product.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
 
-  METHOD validateCurrency.
+  METHOD validatecurrency.
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY Product
-        FIELDS ( Currency ) WITH CORRESPONDING #( keys )
-      RESULT DATA(lt_products).
+      FIELDS ( Currency )
+      WITH VALUE #( FOR key IN keys ( %tky = key-%tky ) )
+      RESULT DATA(lt_prod).
 
-    LOOP AT lt_products INTO DATA(ls_product).
-      IF ls_product-Currency IS INITIAL.
-        APPEND VALUE #( %tky = ls_product-%tky ) TO failed-product.
+    LOOP AT lt_prod ASSIGNING FIELD-SYMBOL(<ls_prod>).
+      IF <ls_prod>-Currency IS INITIAL.
+        APPEND VALUE #( %tky = <ls_prod>-%tky ) TO failed-Product.
 
         APPEND VALUE #(
-          %tky            = ls_product-%tky
-          %msg            = NEW lcl_custom_text_msg( iv_text = 'Currency is required.' )
-          %element-currency = if_abap_behv=>mk-on
-        ) TO reported-product.
+          %tky = <ls_prod>-%tky
+          %msg = new_message(
+                   id       = '00'
+                   number   = '001'
+                   severity = if_abap_behv_message=>severity-error
+                   v1       = |Currency is mandatory| )
+          %element-Currency = if_abap_behv=>mk-on
+        ) TO reported-Product.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.

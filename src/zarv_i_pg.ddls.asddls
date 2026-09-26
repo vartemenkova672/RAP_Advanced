@@ -2,6 +2,7 @@
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'Product Group Value Help'
 @Metadata.ignorePropagatedAnnotations: true
+@ObjectModel.resultSet.sizeCategory: #XS
 @Search.searchable: true
 define view entity ZARV_I_PG
   as select from zarv_d_pr_group

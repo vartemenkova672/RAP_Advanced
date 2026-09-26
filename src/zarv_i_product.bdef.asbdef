@@ -10,6 +10,7 @@ total etag Changetime
 authorization master ( instance )
 
 {
+
   create ( authorization : global );
   update;
   delete;
@@ -21,6 +22,10 @@ authorization master ( instance )
   draft determine action Prepare
   {
 
+   validation validatePG;
+   validation validateProdID;
+   validation validateCurrency;
+
     validation Market~validateMarket;
     validation Market~validateStartDate;
     validation Market~validateDates;
@@ -29,9 +34,6 @@ authorization master ( instance )
     validation MarketOrder~VALIDATE_BUSINESS_PARTNER;
     validation MarketOrder~validate_delivery_date;
 
-    validation validatePG;
-    validation validateProdID;
-    validation validateCurrency;
   }
   association _Market { create; }
 

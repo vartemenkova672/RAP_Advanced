@@ -11,6 +11,7 @@ CLASS lcl_order DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS validate_delivery_date FOR VALIDATE ON SAVE
       IMPORTING keys FOR MarketOrder~validate_delivery_date.
+
     METHODS determineBusinessPartner FOR DETERMINE ON MODIFY
        keys FOR MarketOrder~determineBusinessPartner.
 
@@ -20,6 +21,9 @@ ENDCLASS.
 
 CLASS lcl_order IMPLEMENTATION.
 
+  " =========================================================================
+  " 1. DETERMINATION: CALCULATE_ORDERID
+  " =========================================================================
   METHOD calculate_orderid.
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY MarketOrder
@@ -42,6 +46,9 @@ CLASS lcl_order IMPLEMENTATION.
       REPORTED DATA(lt_reported).
   ENDMETHOD.
 
+  " =========================================================================
+  " 2. DETERMINATION: SET_CALENDAR_YEAR
+  " =========================================================================
   METHOD set_calendar_year.
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY MarketOrder
@@ -61,6 +68,9 @@ CLASS lcl_order IMPLEMENTATION.
         UPDATE FIELDS ( CalendarYear ) WITH CORRESPONDING #( lt_orders ).
   ENDMETHOD.
 
+  " =========================================================================
+  " 3. DETERMINATION: CALCULATE_AMOUNT
+  " =========================================================================
   METHOD calculate_amount.
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY MarketOrder
@@ -88,6 +98,9 @@ CLASS lcl_order IMPLEMENTATION.
         UPDATE FIELDS ( Netamount Grossamount Currency ) WITH CORRESPONDING #( lt_orders ).
   ENDMETHOD.
 
+  " =========================================================================
+  " 4. VALIDATION: VALIDATE_DELIVERY_DATE
+  " =========================================================================
   METHOD validate_delivery_date.
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY MarketOrder
@@ -104,30 +117,37 @@ CLASS lcl_order IMPLEMENTATION.
     LOOP AT lt_orders ASSIGNING FIELD-SYMBOL(<fs_order>).
       READ TABLE lt_markets INTO DATA(ls_market) WITH KEY MrktUuid = <fs_order>-MrktUuid.
       IF sy-subrc = 0.
+
         IF <fs_order>-DeliveryDate <= ls_market-Startdate.
           APPEND VALUE #( %tky = <fs_order>-%tky ) TO failed-marketorder.
+
           APPEND VALUE #(
-            %tky = <fs_order>-%tky
-            %msg = new_message_with_text(
-                     severity = if_abap_behv_message=>severity-error
-                     text     = 'Delivery date must be greater than Market Start Date'
-                   )
+            %tky        = <fs_order>-%tky
+            %element-deliverydate = if_abap_behv=>mk-on
+            %msg        = new_message_with_text(
+                            severity = if_abap_behv_message=>severity-error
+                            text     = 'Delivery date must exceed Market Start Date'
+                          )
           ) TO reported-marketorder.
         ENDIF.
 
         IF ls_market-Enddate IS NOT INITIAL AND <fs_order>-DeliveryDate > ls_market-Enddate.
           APPEND VALUE #( %tky = <fs_order>-%tky ) TO failed-marketorder.
+
           APPEND VALUE #(
-            %tky = <fs_order>-%tky
-            %msg = new_message_with_text(
-                     severity = if_abap_behv_message=>severity-error
-                     text     = 'Delivery date cannot exceed Market End Date'
-                   )
+            %tky        = <fs_order>-%tky
+            %element-deliverydate = if_abap_behv=>mk-on
+            %msg        = new_message_with_text(
+                            severity = if_abap_behv_message=>severity-error
+                            text     = 'Delivery date cannot exceed Market End Date'
+                          )
           ) TO reported-marketorder.
         ENDIF.
+
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
+
 
   METHOD determineBusinessPartner.
     " 1. Read the selected business partner ID from changing order rows
@@ -185,33 +205,39 @@ CLASS lcl_order IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
-METHOD validate_business_partner.
+  METHOD validate_business_partner.
+    " Read the business partner ID from the application state using correct field name
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY MarketOrder
-        FIELDS ( Busspartner ) WITH CORRESPONDING #( keys )
+        FIELDS ( Busspartner )
+        WITH CORRESPONDING #( keys )
       RESULT DATA(lt_orders).
 
     LOOP AT lt_orders INTO DATA(ls_order).
+      " Check if the field is initial
       IF ls_order-Busspartner IS INITIAL.
         APPEND VALUE #( %tky = ls_order-%tky ) TO failed-marketorder.
-        APPEND VALUE #(
-          %tky = ls_order-%tky
-          %msg = new_message_with_text(
-                   severity = if_abap_behv_message=>severity-error
-                   text     = 'Business Partner ID cannot be empty.' )
-        ) TO reported-marketorder.
+        APPEND VALUE #( %tky = ls_order-%tky
+                        %msg = new_message_with_text(
+                                 severity = if_abap_behv_message=>severity-error
+                                 text     = 'Business Partner ID cannot be empty.' )
+                        %element-busspartner = if_abap_behv=>mk-on
+                      ) TO reported-marketorder.
         CONTINUE.
       ENDIF.
 
+      " Call the custom global validation method directly without complex framework objects
       DATA(lv_partner_exists) = zarv_cl_bp_query_provider=>validate_partner( ls_order-Busspartner ).
+
+      " If partner does not exist on remote SAP API Hub, trigger UI error
       IF lv_partner_exists = abap_false.
         APPEND VALUE #( %tky = ls_order-%tky ) TO failed-marketorder.
-        APPEND VALUE #(
-          %tky = ls_order-%tky
-          %msg = new_message_with_text(
-                   severity = if_abap_behv_message=>severity-error
-                   text     = |Business Partner { ls_order-Busspartner } does not exist in SAP Hub| )
-        ) TO reported-marketorder.
+        APPEND VALUE #( %tky = ls_order-%tky
+                        %msg = new_message_with_text(
+                                 severity = if_abap_behv_message=>severity-error
+                                 text     = |Business Partner { ls_order-Busspartner } does not exist in SAP Hub| )
+                        %element-busspartner = if_abap_behv=>mk-on
+                      ) TO reported-marketorder.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.

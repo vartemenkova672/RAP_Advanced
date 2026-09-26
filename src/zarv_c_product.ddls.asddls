@@ -8,8 +8,6 @@ define root view entity ZARV_C_PRODUCT
 {
   key ProdUuid,
 
-      @Search.defaultSearchElement: true
-      @Search.fuzzinessThreshold: 0.8
       Prodid,
 
       @ObjectModel.text.element: ['ProductGroupName']

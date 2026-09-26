@@ -79,6 +79,7 @@ CLASS lhc_Market IMPLEMENTATION.
     lcl_context_buffer=>gv_skip_validations = abap_false.
   ENDMETHOD.
 
+
   METHOD setInitialStatus.
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY Market
@@ -96,8 +97,9 @@ CLASS lhc_Market IMPLEMENTATION.
       REPORTED DATA(lt_reported).
   ENDMETHOD.
 
-METHOD validateStartDate.
+  METHOD validateStartDate.
     IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
+    " VALIDATE_START_DATE: STARTDATE must be >= today's date
     DATA(lv_today) = cl_abap_context_info=>get_system_date( ).
 
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
@@ -110,12 +112,14 @@ METHOD validateStartDate.
         APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
 
         APPEND VALUE #(
-          %tky = ls_market-%tky
-          %msg = new_message_with_text(
-                   severity = if_abap_behv_message=>severity-error
-                   text     = 'Start Date must be greater than today'
-                 )
-        ) TO reported-market.
+           %tky        = ls_market-%tky
+           %msg        = new_message_with_text(
+                           severity = if_abap_behv_message=>severity-error
+                           text     = 'Start Date must be greater than today'
+                         )
+           %element-mrktid = if_abap_behv=>mk-on
+         ) TO reported-market.
+
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
@@ -125,7 +129,7 @@ METHOD validateStartDate.
 
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
       ENTITY Market
-        FIELDS ( Mrktid ProdUuid ) WITH CORRESPONDING #( keys )
+        FIELDS ( Mrktid ) WITH CORRESPONDING #( keys )
       RESULT DATA(lt_markets).
 
     LOOP AT lt_markets INTO DATA(ls_market).
@@ -133,13 +137,13 @@ METHOD validateStartDate.
         APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
 
         APPEND VALUE #(
-          ProdUuid  = ls_market-ProdUuid
-          %is_draft = ls_market-%is_draft
-          %msg      = new_message_with_text(
-                        severity = if_abap_behv_message=>severity-error
-                        text     = 'Market ID is required and cannot be blank.'
-                      )
-        ) TO reported-product.
+          %tky        = ls_market-%tky
+          %msg        = new_message_with_text(
+                          severity = if_abap_behv_message=>severity-error
+                          text     = 'Market ID is required and cannot be blank.'
+                        )
+          %element-mrktid = if_abap_behv=>mk-on
+        ) TO reported-market.
       ENDIF.
     ENDLOOP.
 
@@ -168,19 +172,19 @@ METHOD validateStartDate.
           APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
 
           APPEND VALUE #(
-            ProdUuid  = ls_market-ProdUuid
-            %is_draft = ls_market-%is_draft
-            %msg      = new_message_with_text(
-                          severity = if_abap_behv_message=>severity-error
-                          text     = 'Market doesn''t exist'
-                        )
-          ) TO reported-product.
+            %tky        = ls_market-%tky
+            %msg        = new_message_with_text(
+                            severity = if_abap_behv_message=>severity-error
+                            text     = 'Market doesn''t exist'
+                          )
+            %element-mrktid = if_abap_behv=>mk-on
+          ) TO reported-market.
         ENDIF.
       ENDLOOP.
     ENDIF.
   ENDMETHOD.
 
- METHOD validateDates.
+  METHOD validateDates.
     IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
     DATA(lv_today) = cl_abap_context_info=>get_system_date( ).
 
@@ -194,11 +198,12 @@ METHOD validateStartDate.
         IF ls_market-Enddate <= lv_today.
           APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
           APPEND VALUE #(
-            %tky = ls_market-%tky
-            %msg = new_message_with_text(
-                     severity = if_abap_behv_message=>severity-error
-                     text     = 'End Date must greater than today'
-                   )
+            %tky        = ls_market-%tky
+            %msg        = new_message_with_text(
+                            severity = if_abap_behv_message=>severity-error
+                            text     = 'End Date must be greater than today'
+                          )
+            %element-enddate = if_abap_behv=>mk-on
           ) TO reported-market.
           CONTINUE.
         ENDIF.
@@ -206,18 +211,19 @@ METHOD validateStartDate.
         IF ls_market-Enddate < ls_market-Startdate.
           APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
           APPEND VALUE #(
-            %tky = ls_market-%tky
-            %msg = new_message_with_text(
-                     severity = if_abap_behv_message=>severity-error
-                     text     = 'End Date must be greater than Start Date'
-                   )
+            %tky        = ls_market-%tky
+            %msg        = new_message_with_text(
+                            severity = if_abap_behv_message=>severity-error
+                            text     = 'End Date must be greater than Start Date'
+                          )
+            %element-enddate = if_abap_behv=>mk-on
           ) TO reported-market.
         ENDIF.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
 
- METHOD checkDuplicates.
+   METHOD checkDuplicates.
     IF lcl_context_buffer=>gv_skip_validations = abap_true. RETURN. ENDIF.
 
     READ ENTITIES OF zarv_i_product IN LOCAL MODE
@@ -225,31 +231,27 @@ METHOD validateStartDate.
         FIELDS ( ProdUuid Mrktid ) WITH CORRESPONDING #( keys )
       RESULT DATA(lt_markets).
 
-    LOOP AT lt_markets INTO DATA(ls_market).
-      IF ls_market-Mrktid IS INITIAL.
-        CONTINUE.
-      ENDIF.
+    LOOP AT lt_markets ASSIGNING FIELD-SYMBOL(<ls_market>)
+      GROUP BY ( mrktid = <ls_market>-Mrktid )
+      ASCENDING
+      ASSIGNING FIELD-SYMBOL(<ls_group>).
 
-      READ ENTITIES OF zarv_i_product IN LOCAL MODE
-        ENTITY Product BY \_Market
-          FIELDS ( Mrktid ) WITH VALUE #( ( %tky-ProdUuid = ls_market-ProdUuid ) )
-        RESULT DATA(lt_all_product_markets).
+      DATA(lv_group_count) = REDUCE i( INIT x = 0 FOR m IN GROUP <ls_group> NEXT x = x + 1 ).
 
-      DATA(lv_matches) = REDUCE i( INIT count = 0
-                                  FOR lm IN lt_all_product_markets
-                                  WHERE ( mrktid = ls_market-Mrktid )
-                                  NEXT count = count + 1 ).
-      IF lv_matches > 1.
-        APPEND VALUE #( %tky = ls_market-%tky ) TO failed-market.
+      IF lv_group_count >= 2.
+        LOOP AT GROUP <ls_group> ASSIGNING FIELD-SYMBOL(<ls_first_duplicate>).
 
-        APPEND VALUE #(
-          ProdUuid  = ls_market-ProdUuid
-          %is_draft = ls_market-%is_draft
-          %msg      = new_message_with_text(
-                          severity = if_abap_behv_message=>severity-error
-                          text     = 'This market is already assigned to the product'
-                        )
-        ) TO reported-product.
+          APPEND VALUE #( %tky = VALUE #( ProdUuid = <ls_first_duplicate>-ProdUuid ) ) TO failed-product.
+
+          APPEND VALUE #(
+            %tky            = VALUE #( ProdUuid = <ls_first_duplicate>-ProdUuid )
+            %msg            = new_message_with_text(
+                                severity = if_abap_behv_message=>severity-error
+                                text     = 'This market is already assigned to the product'
+                              )
+          ) TO reported-product.
+          EXIT.
+        ENDLOOP.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
